@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="月报,统计指标," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="月报各项目计算（初版）一.消费记录1.数据来源：月报表 CREATE TABLE `orange_monthly_report` (   `id` int(10) NOT NULL AUTO_INCREMENT,   `user_id` varchar(42) NOT NULL COMMENT &apos;用户ID&apos;,   `content` text NOT NULL COMMENT &apos;月报内容&apos;,">
+<meta name="keywords" content="月报,统计指标">
+<meta property="og:type" content="article">
+<meta property="og:title" content="月报各统计指标计算方法">
+<meta property="og:url" content="http://yoursite.com/2017/02/15/monthlyReport/index.html">
+<meta property="og:site_name" content="Frone&#39;s Blog">
+<meta property="og:description" content="月报各项目计算（初版）一.消费记录1.数据来源：月报表 CREATE TABLE `orange_monthly_report` (   `id` int(10) NOT NULL AUTO_INCREMENT,   `user_id` varchar(42) NOT NULL COMMENT &apos;用户ID&apos;,   `content` text NOT NULL COMMENT &apos;月报内容&apos;,">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-13T11:06:08.778Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="月报各统计指标计算方法">
+<meta name="twitter:description" content="月报各项目计算（初版）一.消费记录1.数据来源：月报表 CREATE TABLE `orange_monthly_report` (   `id` int(10) NOT NULL AUTO_INCREMENT,   `user_id` varchar(42) NOT NULL COMMENT &apos;用户ID&apos;,   `content` text NOT NULL COMMENT &apos;月报内容&apos;,">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/02/15/monthlyReport/"/>
+
+
+
+
+
+  <title>月报各统计指标计算方法 | Frone's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Frone's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术小窝</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            日程表
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/15/monthlyReport/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">月报各统计指标计算方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-15T10:14:01+08:00">
+                2017-02-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IMORA/" itemprop="url" rel="index">
+                    <span itemprop="name">IMORA</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="月报各项目计算（初版）"><a href="#月报各项目计算（初版）" class="headerlink" title="月报各项目计算（初版）"></a>月报各项目计算（初版）</h2><h3 id="一-消费记录"><a href="#一-消费记录" class="headerlink" title="一.消费记录"></a>一.消费记录</h3><p>1.<strong>数据来源：月报表</strong></p>
+<pre><font size="2">CREATE TABLE `orange_monthly_report` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(42) NOT NULL COMMENT '用户ID',
+  `content` text NOT NULL COMMENT '月报内容',
+  `created_time` int(10) NOT NULL COMMENT '月报创建时间',
+  `modify_time` int(10) NOT NULL COMMENT '处理时间',
+  `report_month` varchar(6) NOT NULL COMMENT '月报生成年月',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='月报数据表';
+
+
+CREATE TABLE `orange_consume_detail` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` char(42) NOT NULL COMMENT '用户id',
+  `card_id` char(32) NOT NULL COMMENT '卡片id',
+  `bankcard_id` char(32) NOT NULL COMMENT '银行卡号',
+  `bank_name` varchar(90) NOT NULL COMMENT '银行名',
+  `bill_type` tinyint(1) NOT NULL COMMENT '消费类型：1、手机银行支付，2、支取，3、转账等',
+  `bill` float(10,2) NOT NULL COMMENT '消费金额',
+  `balance` float(10,2) NOT NULL COMMENT '余额',
+  `created_time` int(10) NOT NULL COMMENT '创建时间',
+  `modify_time` int(10) NOT NULL COMMENT '修改时间',
+  `report_month` varchar(6) NOT NULL COMMENT '月报生成年月',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COMMENT='消费详情表';
+</font></pre>
+
+
+<p>2.<strong>消费记录详情SQL</strong></p>
+<p>得到指定月份的用户消费详情<br>提供各卡片当月消费金额</p>
+<pre><font size="2">SELECT user_id, bankcard_id,bill_time,cons_type,bill FROM consume_details
+WHERE  MONTH(bill_time) == "%s" AND user_id = "%s"</font></pre>
+
+<font color="red" size="2">待定：短信去重</font>
+
+
+<h3 id="二-我在旅途"><a href="#二-我在旅途" class="headerlink" title="二.我在旅途"></a>二.我在旅途</h3><p>1.<strong>数据来源：里程卡，酒店卡</strong></p>
+<font color="red" size="2">待定：</font>
+
+<pre><code>2.里程卡中可能无法得到飞行次数数据。
+3.里程数可能无法涵盖所有公司。
+4.酒店卡数据来源？？
+</code></pre><p>5.抵达城市算法，只用手机GPS位置   </p>
+<h3 id="三-人脉动态"><a href="#三-人脉动态" class="headerlink" title="三.人脉动态"></a>三.人脉动态</h3><p>1.新增名片数，新增好友数<br>从数据库中获取新增名片数，新增好友数</p>
+<p>新增好友数计算：contact_card(is_friend,from_uid,created_time)。从该表中按创建时间分组后取好友uid最早的记录，看是否落入统计区间。</p>
+<p>2.被关注人数<br>来自谁看过我的消费结果<br>contact_card_see_me_source(未去重）<br>统计自然月的关注过用户的人数</p>
+<p>3.参加会议时间 </p>
+<p><a href="http://192.168.30.191/example/orange_schedule.txt" target="_blank" rel="noopener">http://192.168.30.191/example/orange_schedule.txt</a><br>日程相关说明</p>
+<pre><code>oradt_cloud1520.contact_card_schedule 取会议开始结束时间；
+</code></pre><p>4.关注公司</p>
+<pre><code>oradt_cloud1520.contact_card_schedule_map 取uuid，即参与人；    
+与DM库中公司表关联得到参与人公司,统计公司前三位。如有参与人公司排名相同的情况，取名片更新时间最新的公司。
+</code></pre><h3 id="四-卡片统计"><a href="#四-卡片统计" class="headerlink" title="四.卡片统计"></a>四.卡片统计</h3><p>日志中获取卡片展示超过5秒的所有卡片，每找到一对展示开始时间超过5秒的记录，认为是一次使用，记入DM库</p>
+<pre><font size="2">CREATE TABLE `card_used_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` char(40) DEFAULT '' COMMENT '用户id',
+  `card_id` char(32) DEFAULT '' COMMENT '卡片id',
+  `daily_used_count` int(10) DEFAULT '' COMMENT '卡片当日使用次数',
+  `card_type` char(32) DEFAULT '' COMMENT '卡片类型',
+  `used_time` datetime COMMENT '卡片使用时间',
+  `batch_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='卡片使用次数表'</font></pre>
+
+<p>展示结果为按日别、卡别、用户统计使用次数<br>各类卡使用占比则先分组<br>常用卡列表来自于hive</p>
+<h3 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h3><p>月报json存储格式</p>
+<pre><font size="2">{
+    "consume": {
+        "totle": 58097.86,
+        "bank": [
+            {
+                "bank_name": "招商银行",
+                "card_num": 1234567898765,
+                "amount": 300.23
+            },
+            {
+                "bank_name": "招商银行",
+                "card_num": 9876543212345,
+                "amount": 451.8
+            },
+            {
+                "bank_name": "工商银行",
+                "card_num": 66436743634424,
+                "amount": 670.83
+            },
+            {
+                "bank_name": "建设银行",
+                "card_num": 63762343254654,
+                "amount": 1270.31
+            }
+        ]
+    },
+    "travel": {
+        "flight": 28,
+        "mileage": 10867,
+        "stay": 15,
+        "city": "北京、东京、纽约、斯德哥尔摩"
+    },
+    "connection": {
+        "meeting_hour": 28,
+        "meeting_people": 15,
+        "new_friend": 98,
+        "new_card": 887,
+        "followed": 185,
+        "follow_comp": "苹果、google、三星"
+    },
+    "card": {
+        "category": [
+            {
+                "type": "行程卡",
+                "freq": 90
+            },
+            {
+                "type": "名片",
+                "freq": 50
+            },
+            {
+                "type": "酒店卡",
+                "freq": 50
+            },
+            {
+                "type": "系统卡",
+                "freq": 10
+            },
+            {
+                "type": "other",
+                "freq": 100
+            }
+        ],
+        "recent_use": "33829923329,53829923329,9829923380"
+    }
+}
+
+** 此处的 other是取使用在4次以上，并不在前4位的卡片，非卡片类型的其它卡片
+</font></pre> 
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/月报/" rel="tag"># 月报</a>
+          
+            <a href="/tags/统计指标/" rel="tag"># 统计指标</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/14/message_pushing/" rel="next" title="资讯推送|用户推广|活动管理">
+                <i class="fa fa-chevron-left"></i> 资讯推送|用户推广|活动管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/02/meeting/" rel="prev" title="月报会议模块">
+                月报会议模块 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Frone Xie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#月报各项目计算（初版）"><span class="nav-number">1.</span> <span class="nav-text">月报各项目计算（初版）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-消费记录"><span class="nav-number">1.1.</span> <span class="nav-text">一.消费记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-我在旅途"><span class="nav-number">1.2.</span> <span class="nav-text">二.我在旅途</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三-人脉动态"><span class="nav-number">1.3.</span> <span class="nav-text">三.人脉动态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四-卡片统计"><span class="nav-number">1.4.</span> <span class="nav-text">四.卡片统计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附录"><span class="nav-number">1.5.</span> <span class="nav-text">附录</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frone Xie</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

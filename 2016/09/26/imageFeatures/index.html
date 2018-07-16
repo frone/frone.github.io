@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="opencv,bovw,imagehash," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="pHash, BOV等图像特征抽取方法">
+<meta name="keywords" content="opencv,bovw,imagehash">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图像特征抽取">
+<meta property="og:url" content="http://yoursite.com/2016/09/26/imageFeatures/index.html">
+<meta property="og:site_name" content="Frone&#39;s Blog">
+<meta property="og:description" content="pHash, BOV等图像特征抽取方法">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-13T11:06:08.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图像特征抽取">
+<meta name="twitter:description" content="pHash, BOV等图像特征抽取方法">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/09/26/imageFeatures/"/>
+
+
+
+
+
+  <title>图像特征抽取 | Frone's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Frone's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术小窝</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            日程表
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/26/imageFeatures/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">图像特征抽取</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-26T14:47:25+08:00">
+                2016-09-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>pHash, BOV等图像特征抽取方法<a id="more"></a></excerpt></p>
+<the rest="" of="" contents="" |="" 余下全文="">
+
+
+<p>代码库地址： <a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:similarCards.git</p>
+<h3 id="使用hash函数将图片转化为指纹"><a href="#使用hash函数将图片转化为指纹" class="headerlink" title="使用hash函数将图片转化为指纹"></a>使用hash函数将图片转化为指纹</h3><p>参照： <a href="https://github.com/paul-schwendenman/imagehash2" target="_blank" rel="noopener">https://github.com/paul-schwendenman/imagehash2</a></p>
+<p>使用imagehash获取图片的fingerprint，建立指纹库，然后每次查找指纹的编辑距离最近的几个图片作为候选</p>
+<h3 id="使用BOVW算法"><a href="#使用BOVW算法" class="headerlink" title="使用BOVW算法"></a>使用BOVW算法</h3><p>参见代码：192.168.30.251:/opt/workspace/imgSimilarity/clustering/vocabulary.py</p>
+<p>思路：</p>
+<ul>
+<li>抽取descriptor：使用opencv模块获取图像的keypoints之后，抽取descriptor，</li>
+<li>聚类获取码表：由于descriptor是K维向量(列固定)表示的，因此可以用descriptor的向量聚类出一个codebook，每个向量有一个index，</li>
+<li>图片重新表示：每张图片都由这个codebook中的向量表示，即用一组index表示。</li>
+<li>相似度计算： 两张图片的相似度就是两组index的相似度。</li>
+</ul>
+<h3 id="其他方法"><a href="#其他方法" class="headerlink" title="其他方法"></a>其他方法</h3><ul>
+<li>pHash（名片图片集上效果不理想）</li>
+<li>LIRE</li>
+</ul>
+<blockquote>
+<p>基于Lire的图像检索：<br>—— by mazf<br>1、代码：<a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:OraImageRetrival.git<br>2、代码说明：</p>
+<blockquote>
+<p>2.1 代码有两个部分，都是Java文件，有详细的注释：<br>–OraIndexer：用来构建索引<br>–OraSearcher：根据构建好的索引，进行图像检索</p>
+<blockquote>
+<p><strong>OraIndexer</strong> 是一个单线程程序，所以，构建索引比较慢，解决方法是加入多线程<br>要创建索引，需要一个文档构建对象LocalDocumentBuilder，并给该对象传入提取图像特征的方法，Lire提供了很多特征提取的方法，本程序采用的是快速sift方法CvSurfExtractor。有了LocalDocumentBuilder对象后，可以对图像创建一文档Document，并将该文档写入索引，代码如下：<br><br><em>// 创建一个文档对象（Lucene的概念）<br>LocalDocumentBuilder localDocumentBuilder = new LocalDocumentBuilder();<br>// 给文档对象添加一个提取器，使用Surf的提取器，传入码表<br>localDocumentBuilder.addExtractor(CvSurfExtractor.class, Cluster.readClusters(codeBook));<br>// 读取图像文件，并用文档对象创建一个文档<br>BufferedImage img = ImageIO.read(new FileInputStream(imageFilePath));<br>Document doc = localDocumentBuilder.createDocument(img, imageFilePath);<br>// 将图像文档写入索引，iw是IndexWriter对象<br>iw.addDocument(doc);</em><br><br><br><strong>OraSearch</strong> 是图像检索对象，检索速度在2s左右，很快。<br>检索和创建索引要匹配，都需要使用相同的特征提取方法，这里使用CvSurfExtractor特征提取<br>检索的过程需要三个主要的对象：索引读取对象，搜索对象，匹配对象<br><br><em>// 创建 索引读取对象，搜索对象，匹配对象<br>// 同样，需要将CvSurfExtractor传给搜索对象，hits中保存的是匹配命中的图像文档对象<br>IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));<br>ImageSearcher searcher = new GenericFastImageSearcher(resCnt, CvSurfExtractor.class, new BOVW(),128, true, reader, codeBook);<br>ImageSearchHits hits = searcher.search(ImageIO.read(new File(imageName)), reader);</em><br></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>2.2 目录介绍<br>–CardImages：用于测试的名片图片<br>–CodeBook： CvSURF128码表，不需要修改<br>–ImageIndex： Lire生成的索引目录</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>3、备注：<br>程序在Windows下编译，如果在Linux和Mac上，要重新编译Lire库<br>Lire源程序在 251 上我的目录下：Lire-1.0b2.zip<br>用idea打开，用 maven 编译就可以了</p>
+</blockquote>
+<h3 id="相关调研工作见：-192-168-30-251"><a href="#相关调研工作见：-192-168-30-251" class="headerlink" title="相关调研工作见：(192.168.30.251)"></a>相关调研工作见：(192.168.30.251)</h3><p>  /opt/workspace/imgSimilarity<br>  /opt/workspace/similarCards</p>
+</the>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/opencv/" rel="tag"># opencv</a>
+          
+            <a href="/tags/bovw/" rel="tag"># bovw</a>
+          
+            <a href="/tags/imagehash/" rel="tag"># imagehash</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/26/VisitorStreaming/" rel="next" title="谁看过我">
+                <i class="fa fa-chevron-left"></i> 谁看过我
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/26/industryTagger/" rel="prev" title="企业名称的行业分类">
+                企业名称的行业分类 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Frone Xie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用hash函数将图片转化为指纹"><span class="nav-number">1.</span> <span class="nav-text">使用hash函数将图片转化为指纹</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用BOVW算法"><span class="nav-number">2.</span> <span class="nav-text">使用BOVW算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他方法"><span class="nav-number">3.</span> <span class="nav-text">其他方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#相关调研工作见：-192-168-30-251"><span class="nav-number">4.</span> <span class="nav-text">相关调研工作见：(192.168.30.251)</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frone Xie</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="名片,基础信息," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="名片信息拓展系统一.业务整体流程名片信息拓展系统主要包括两大任务：一.从json格式的数据源提取所需要字段，入dm库供数据挖掘等使用。二.在基础信息上进行拓展，以获得更丰富的数据。 现用到的json字段有：姓名，手机，公司名，公司电话，职位拓展字段：手机→城市，公司名→行业，公司电话→城市，职位+行业→职能 1.数据来源：可能涉及到如下数据表  名片基本信息，json格式oradt_cloud_t">
+<meta name="keywords" content="名片,基础信息">
+<meta property="og:type" content="article">
+<meta property="og:title" content="名片信息拓展系统">
+<meta property="og:url" content="http://yoursite.com/2017/04/28/namecard_extra/index.html">
+<meta property="og:site_name" content="Frone&#39;s Blog">
+<meta property="og:description" content="名片信息拓展系统一.业务整体流程名片信息拓展系统主要包括两大任务：一.从json格式的数据源提取所需要字段，入dm库供数据挖掘等使用。二.在基础信息上进行拓展，以获得更丰富的数据。 现用到的json字段有：姓名，手机，公司名，公司电话，职位拓展字段：手机→城市，公司名→行业，公司电话→城市，职位+行业→职能 1.数据来源：可能涉及到如下数据表  名片基本信息，json格式oradt_cloud_t">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://i4.buimg.com/4851/24a68975106791ab.png">
+<meta property="og:image" content="http://i1.piimg.com/4851/4d54fb562381507a.jpg">
+<meta property="og:updated_time" content="2018-07-13T11:06:08.782Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="名片信息拓展系统">
+<meta name="twitter:description" content="名片信息拓展系统一.业务整体流程名片信息拓展系统主要包括两大任务：一.从json格式的数据源提取所需要字段，入dm库供数据挖掘等使用。二.在基础信息上进行拓展，以获得更丰富的数据。 现用到的json字段有：姓名，手机，公司名，公司电话，职位拓展字段：手机→城市，公司名→行业，公司电话→城市，职位+行业→职能 1.数据来源：可能涉及到如下数据表  名片基本信息，json格式oradt_cloud_t">
+<meta name="twitter:image" content="http://i4.buimg.com/4851/24a68975106791ab.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/28/namecard_extra/"/>
+
+
+
+
+
+  <title>名片信息拓展系统 | Frone's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Frone's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术小窝</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            日程表
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/28/namecard_extra/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">名片信息拓展系统</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-28T10:14:01+08:00">
+                2017-04-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IMORA/" itemprop="url" rel="index">
+                    <span itemprop="name">IMORA</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="名片信息拓展系统"><a href="#名片信息拓展系统" class="headerlink" title="名片信息拓展系统"></a>名片信息拓展系统</h2><h3 id="一-业务整体流程"><a href="#一-业务整体流程" class="headerlink" title="一.业务整体流程"></a>一.业务整体流程</h3><p>名片信息拓展系统主要包括两大任务：一.从json格式的数据源提取所需要字段，入dm库供数据挖掘等使用。二.在基础信息上进行拓展，以获得更丰富的数据。</p>
+<p>现用到的json字段有：姓名，手机，公司名，公司电话，职位<br>拓展字段：手机→城市，公司名→行业，公司电话→城市，职位+行业→职能</p>
+<p>1.<strong>数据来源：</strong><br>可能涉及到如下数据表</p>
+<ul>
+<li>名片基本信息，json格式<br>oradt_cloud_test2.contact_card<br>oradt_cloud_test2.contact_card_extend</li>
+<li>手机、座机区号<br>dm_test.province_city_unique_code</li>
+<li>行业职能对照表<br>oradt_cloud_test2.account_basic_category</li>
+</ul>
+<p>2.<strong>整体处理流程</strong><br>本系统的处理流程如下图：<br><img src="http://i4.buimg.com/4851/24a68975106791ab.png" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/step.png</p>
+<ul>
+<li>对应到代码，整体的入口为jobsAssigner，主要用来通过命令行参数实现运行每日任务，还是只计算给定区间的数据任务，将时间区间传给makeResultTables。</li>
+<li>makeResultTables则查询不同数据源，拼合计算所需的数据格式，处理完毕后再拼合入库所需的数据格式，并执行入等库操作。</li>
+<li>其中makeResultTables会调用jsonPreprocess，jsonPreprocess主要任务为接受从makeResultTables所传递的时间区间，取出该区间中json数据的结果，拼合为后续信息拓展流程所需的数据格式。</li>
+</ul>
+<h3 id="二-功能模块说明"><a href="#二-功能模块说明" class="headerlink" title="二.功能模块说明"></a>二.功能模块说明</h3><p>主要功能模块的包结构如下图：<br><img src="http://i1.piimg.com/4851/4d54fb562381507a.jpg" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/pakages.png</p>
+<p>信息拓展的各个模块，结构类似，输入数据格式为pandas.Dataframe，通过prepare()方法转换格式后，传递给transform()方法进行计算。</p>
+<h3 id="三-项目部署"><a href="#三-项目部署" class="headerlink" title="三.项目部署"></a>三.项目部署</h3><ul>
+<li><p>当前每日任务部署于： 101.251.193.28:/home/mqian/3366<br>由crontab每天凌晨3点执行(3388的暂时弃用)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#每天凌晨3点整执行，名片数据解析</span><br><span class="line">#0 3 * * *  /usr/local/bin/python /home/mqian/3388/jobsAssigner.py -d 2&gt;&gt; /home/mqian/3388/log3388</span><br><span class="line">0 3 * * *  /usr/local/bin/python /home/mqian/3366/jobsAssigner.py -d 2&gt;&gt; /home/mqian/3366/log3366</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>git位置<br><a href="http://192.168.30.251:10086/git/mengqian/namecard_info_extra_basic.git" target="_blank" rel="noopener">http://192.168.30.251:10086/git/mengqian/namecard_info_extra_basic.git</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/名片/" rel="tag"># 名片</a>
+          
+            <a href="/tags/基础信息/" rel="tag"># 基础信息</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/02/meeting/" rel="next" title="月报会议模块">
+                <i class="fa fa-chevron-left"></i> 月报会议模块
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/08/alias_tag/" rel="prev" title="名片别名标注">
+                名片别名标注 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Frone Xie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#名片信息拓展系统"><span class="nav-number">1.</span> <span class="nav-text">名片信息拓展系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-业务整体流程"><span class="nav-number">1.1.</span> <span class="nav-text">一.业务整体流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-功能模块说明"><span class="nav-number">1.2.</span> <span class="nav-text">二.功能模块说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三-项目部署"><span class="nav-number">1.3.</span> <span class="nav-text">三.项目部署</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frone Xie</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

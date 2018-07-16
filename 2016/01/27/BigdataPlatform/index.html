@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="bigdata,CDH,Zeppelin," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="CDH大数据平台安装文档">
+<meta name="keywords" content="bigdata,CDH,Zeppelin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cloudera大数据平台安装文档">
+<meta property="og:url" content="http://yoursite.com/2016/01/27/BigdataPlatform/index.html">
+<meta property="og:site_name" content="Frone&#39;s Blog">
+<meta property="og:description" content="CDH大数据平台安装文档">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step1-selectEdition.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step2-showStack.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step3-selectRepo.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step4-installJDK.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step5-singleUser.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step6-configSSH.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step7-clusterInstallation.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step8-installParcel.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step9-hostsCheck.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step10-showCheck.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step11-clusterConfig.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step12-dbSetting.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step13-Audit.jpg">
+<meta property="og:image" content="http://abcxy.qiniudn.com/cloudera_step14-startCluster.jpg">
+<meta property="og:updated_time" content="2018-07-13T11:06:08.754Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cloudera大数据平台安装文档">
+<meta name="twitter:description" content="CDH大数据平台安装文档">
+<meta name="twitter:image" content="http://abcxy.qiniudn.com/cloudera_step1-selectEdition.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/01/27/BigdataPlatform/"/>
+
+
+
+
+
+  <title>cloudera大数据平台安装文档 | Frone's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Frone's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术小窝</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            日程表
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/27/BigdataPlatform/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">cloudera大数据平台安装文档</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-27T12:21:52+08:00">
+                2016-01-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><excerpt in="" index="" |="" 首页摘要=""><br>CDH大数据平台安装文档 <a id="more"></a></excerpt></p>
+<the rest="" of="" contents="" |="" 余下全文="">
+
+<h1 id="cloudera大数据平台安装文档"><a href="#cloudera大数据平台安装文档" class="headerlink" title="cloudera大数据平台安装文档"></a>cloudera大数据平台安装文档</h1><hr>
+<h2 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h2><ul>
+<li>系统环境<ul>
+<li>主机：IDC 8台主机</li>
+<li>操作系统：<strong>centos 6.5</strong></li>
+<li>Cloudera Manager：<strong>5.4.7</strong></li>
+<li>CDH： <strong>5.4.7</strong></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="安装说明"><a href="#安装说明" class="headerlink" title="安装说明"></a>安装说明</h2><p><strong> 如无说明，指所有主机均进行相同操作 </strong></p>
+<ul>
+<li><p>配置系统环境</p>
+<ul>
+<li><p>关闭Firewall和SELinux</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">service iptables stop</span><br><span class="line">chkconfig iptables off</span><br><span class="line">sed -i <span class="string">'s/SELINUX=enforcing/SELINUX=disabled/g'</span> /etc/selinux/config</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>主机时间同步 <strong>ntpdate</strong></p>
+</li>
+<li>修改hosts文件<br>  <strong>注意：</strong>推荐构建DNS服务, <code>host -t  PTR  hostname</code> 需解析成正确的IP<ul>
+<li>将各个节点及主机名加入hosts文件</li>
+</ul>
+</li>
+<li>ssh无密码互访<ul>
+<li>参考网络资料</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>创建CDH本地库<br>  <a href="http://www.cloudera.com/content/www/en-us/documentation/enterprise/latest/topics/cm_ig_create_local_package_repo.html" target="_blank" rel="noopener">参考CDH官方手册</a></p>
+<ul>
+<li><p>下载库文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /var/www/html &amp;&amp; <span class="built_in">cd</span> /var/www/html</span><br><span class="line">wget -r http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/5.4.7/</span><br><span class="line">wget -r http://archive.cloudera.com/cdh5/parcels/5.4.7/</span><br><span class="line">wget -r http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/5.4.7/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>构建http服务</p>
+<ul>
+<li><p>安装nginx</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install nginx</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置nginx server</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/nginx/conf.d/default.conf</span><br></pre></td></tr></table></figure>
+<p>将 root 对应的目录改成： <strong> /var/www/html </strong>，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /var/www/html;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">    autoindex on;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动nginx</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>添加yum库文件</p>
+<ul>
+<li><p>创建CDH库文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/yum.repos.d/cloudera-cdh5.repo</span><br></pre></td></tr></table></figure>
+<p>内容如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[cloudera-cdh5]</span><br><span class="line">name=Cloudera&apos;s Distribution for Hadoop, Version 5</span><br><span class="line">baseurl=http://172.17.4.101/cdh/5/</span><br><span class="line">gpgkey=http://172.17.4.101/cdh/RPM-GPG-KEY-cloudera</span><br><span class="line">gpgcheck = 1</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>更新yum库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum repolist</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>安装Java</p>
+<ul>
+<li><p>CDH库中带有Oracle Java</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum search oracle-j2sdk</span><br></pre></td></tr></table></figure>
+<p>安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install oracle-j2sdk1.7 -y</span><br></pre></td></tr></table></figure>
+<p>默认安装路径：<strong>/usr/java/$jdkversion</strong> –&gt; <strong>JAVA_HOME</strong></p>
+</li>
+</ul>
+</li>
+<li><p>安装cloudera-manager <strong>（任选一台主机）</strong><br>  参考官网手册 <a href="http://www.cloudera.com/content/www/en-us/documentation/enterprise/latest/topics/cm_ig_install_path_a.html" target="_blank" rel="noopener">CDH5.4安装</a></p>
+<ul>
+<li><p>下载cloudera-manager-installer.bin</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget http://archive.cloudera.com/cm5/installer/latest/cloudera-manager-installer.bin</span><br><span class="line">chmod +x cloudera-manager-installer.bin</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>运行Cloudera Manager Server installer (install from the local repository)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./cloudera-manager-installer.bin --skip_repo_package=1</span><br></pre></td></tr></table></figure>
+<p>按提示操作，脚本会自动安装Cloudera Manager Server，安装并初始化内嵌数据库（postgresql），然后启动7180端口。<br>安装路径：<strong> /opt/cloudera/parcels/ </strong></p>
+</li>
+</ul>
+</li>
+<li><p>添加节点及服务</p>
+<ul>
+<li>登陆cloudera-manager管理界面<br>  访问入口： <strong> <a href="http://cloudera-manager-server:7180" target="_blank" rel="noopener">http://cloudera-manager-server:7180</a> </strong><br>  默认用户名/密码： <strong>admin/admin</strong></li>
+<li><p>按提示操作加入节点，并安装软件包。</p>
+<ul>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step1-selectEdition.jpg" alt="选择CM版本"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step2-showStack.jpg" alt="组件展示"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step3-selectRepo.jpg" alt="配置存储库"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step4-installJDK.jpg" alt="JDK安装选项"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step5-singleUser.jpg" alt="启用点用户模式"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step6-configSSH.jpg" alt="配置ssh登陆信息"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step7-clusterInstallation.jpg" alt="执行安装脚本"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step8-installParcel.jpg" alt="下载并分配软件包"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step9-hostsCheck.jpg" alt="主机巡检"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step10-showCheck.jpg" alt="主机检测结果"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step11-clusterConfig.jpg" alt="角色分配"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step12-dbSetting.jpg" alt="数据库设置"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step13-Audit.jpg" alt="审核配置"></li>
+<li><img src="http://abcxy.qiniudn.com/cloudera_step14-startCluster.jpg" alt="启动并初始化集群"></li>
+</ul>
+</li>
+<li><p>安装并初始化zookeeper</p>
+</li>
+<li><p>配置Isilon环境</p>
+<ul>
+<li><strong>需在Isilon上新建zone，并创建相应的用户和用户组</strong></li>
+<li>在Isilon URI中填写创建的域名配置信息，如：<em>hdfs://hadoop.example.com:8020</em></li>
+</ul>
+</li>
+<li><p>添加yarn服务</p>
+</li>
+<li><p>添加spark服务</p>
+</li>
+<li><p>添加kafka服务 <em> 未在基础parcels包中，必要时，创建离线安装库 </em></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="构建Zeppelin环境"><a href="#构建Zeppelin环境" class="headerlink" title="构建Zeppelin环境"></a>构建Zeppelin环境</h2><p><a href="http://zeppelin.incubator.apache.org/" target="_blank" rel="noopener">Apache Zeppelin简介</a></p>
+<ul>
+<li><p>准备编译环境</p>
+<ul>
+<li>Java<blockquote>
+<p>见<strong> 安装说明 </strong>中的第三节</p>
+</blockquote>
+</li>
+<li>Maven<ul>
+<li>下载maven二进制包，解压，</li>
+<li>将bin文件夹加入PATH变量中</li>
+</ul>
+</li>
+<li>Node.js （建议安装，编译时也会自动安装，如编译失败，手动安装依赖包）<ul>
+<li>下载nodejs二进制包，解压<br>  <strong>注意：</strong> nodejs版本无需过高，推荐使用 v0.10.18（zeppelin默认版本）</li>
+<li>将bin文件夹加入PATH变量中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>下载及编译</p>
+<ul>
+<li><p>下载Zeppelin源码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/apache/incubator-zeppelin.git</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用maven编译Zeppelin</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn clean package -Dhadoop.version=2.6.0-cdh5.4.0 -DskipTests</span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong>如果失败，多尝试几次；如缺少node依赖包，使用node或者bower手动安装</p>
+</li>
+</ul>
+</li>
+<li><p>配置Zeppelin环境</p>
+<ul>
+<li>zeppelin-env.sh<br>  修改<code>SPARK_HOME</code>、<code>MASTER</code>、<code>HADOOP_CONF_DIR</code>等配置项</li>
+<li>zeppelin-site.xml<br>  设置<code>zepplin.server.port</code>等，如改成<strong>11180</strong>，默认8080</li>
+</ul>
+</li>
+<li><p>启动与停止Zeppelin</p>
+<ul>
+<li><p>启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$ZEPPELIN_HOME</span></span><br><span class="line">./bin/zeppelin-daemon.sh start</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>停止</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$ZEPPELIN_HOME</span></span><br><span class="line">./bin/zeppelin-daemon.sh stop</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>创建Zeppelin Notebook</p>
+<ul>
+<li>使用浏览器打开Zeppelin页面<br>  <code>http://zeppelin-server:11180</code></li>
+<li>在Zeppelin主页上设置Interpreter、创建Notebook等<br>  参见<a href="http://zeppelin.incubator.apache.org/" target="_blank" rel="noopener">Zeppelin Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+</the>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/bigdata/" rel="tag"># bigdata</a>
+          
+            <a href="/tags/CDH/" rel="tag"># CDH</a>
+          
+            <a href="/tags/Zeppelin/" rel="tag"># Zeppelin</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/27/imoraWebService/" rel="prev" title="Imora用户行为日志采集系统">
+                Imora用户行为日志采集系统 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Frone Xie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#cloudera大数据平台安装文档"><span class="nav-number">1.</span> <span class="nav-text">cloudera大数据平台安装文档</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统环境"><span class="nav-number">1.1.</span> <span class="nav-text">系统环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装说明"><span class="nav-number">1.2.</span> <span class="nav-text">安装说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构建Zeppelin环境"><span class="nav-number">1.3.</span> <span class="nav-text">构建Zeppelin环境</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frone Xie</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
