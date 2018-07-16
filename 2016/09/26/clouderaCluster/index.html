@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Kafka,Cloudera," />
+  <meta name="keywords" content="Cloudera,Kafka," />
 
 
 
@@ -80,7 +80,7 @@
 
 
 <meta name="description" content="CDH集群环境说明（含IDC环境和OFFICE环境）">
-<meta name="keywords" content="Kafka,Cloudera">
+<meta name="keywords" content="Cloudera,Kafka">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cloudera集群环境说明文档">
 <meta property="og:url" content="http://yoursite.com/2016/09/26/clouderaCluster/index.html">
@@ -358,6 +358,7 @@
 <p>环境搭建文档：<a href="http://192.168.30.251:4000/2016/01/27/BigdataPlatform/" target="_blank" rel="noopener">http://192.168.30.251:4000/2016/01/27/BigdataPlatform/</a></p>
 <hr>
 <p>IDC Cloudera集群环境</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -435,7 +436,7 @@
 <td>192.168.1.134</td>
 <td>是</td>
 <td>是</td>
-<td>–</td>
+<td>—</td>
 </tr>
 <tr>
 <td>Slave1</td>
@@ -444,7 +445,7 @@
 <td>192.168.1.135</td>
 <td>是</td>
 <td>是</td>
-<td>–</td>
+<td>—</td>
 </tr>
 <tr>
 <td>Slave2</td>
@@ -457,9 +458,11 @@
 </tr>
 </tbody>
 </table>
+</div>
 <hr>
 <p>OFFICE Cloudera集群测试环境</p>
 <p>root密码：123456</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -480,22 +483,23 @@
 <td>vm149</td>
 <td>BJOFFICE-Oradt-Spark03</td>
 <td>192.168.30.149</td>
-<td>–</td>
+<td>—</td>
 </tr>
 <tr>
 <td>vm148</td>
 <td>BJOFFICE-Oradt-Spark02</td>
 <td>192.168.30.148</td>
-<td>–</td>
+<td>—</td>
 </tr>
 <tr>
 <td>vm147</td>
 <td>BJOFFICE-Oradt-Spark01</td>
 <td>192.168.30.147</td>
-<td>–</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
+</div>
 <hr>
 <h2 id="常见问题及解决方案"><a href="#常见问题及解决方案" class="headerlink" title="常见问题及解决方案"></a>常见问题及解决方案</h2><ul>
 <li><p>1 未找到第三方jar包？</p>
@@ -504,7 +508,7 @@
 <p>将第三方jar包所在路径添加到/etc/spark/conf/classpath文件末尾， 同步到集群中所有节点</p>
 </li>
 <li><p>解决方案二.</p>
-<p>通过cloudera manager界面，找到spark下的”配置”–&gt;”Gateway Default Group”–&gt;”高级”，修改spark-defaults.conf，将第三方jar包加入到spark.driver.extraClassPath和spark.executor.extraClassPath选项中</p>
+<p>通过cloudera manager界面，找到spark下的”配置”—&gt;”Gateway Default Group”—&gt;”高级”，修改spark-defaults.conf，将第三方jar包加入到spark.driver.extraClassPath和spark.executor.extraClassPath选项中</p>
 </li>
 </ul>
 </li>
@@ -520,7 +524,7 @@
 <li><p>5 cloudera升级</p>
 <ul>
 <li><p>方法一：</p>
-<p>登录Cloudera Manager界面，”主机” –&gt; “Parcel”，进入软件包界面后可看到先用软件版本， 右上角”检查新Parcel”可发现新parcel，”下载”–&gt;”分配”–&gt;”安装”</p>
+<p>登录Cloudera Manager界面，”主机” —&gt; “Parcel”，进入软件包界面后可看到先用软件版本， 右上角”检查新Parcel”可发现新parcel，”下载”—&gt;”分配”—&gt;”安装”</p>
 </li>
 <li><p>方法二：</p>
 <p>从cloudera官网下载（<a href="http://archive.cloudera.com/cdh5，" target="_blank" rel="noopener">http://archive.cloudera.com/cdh5，</a> <a href="http://archive.cloudera.com/cm5）" target="_blank" rel="noopener">http://archive.cloudera.com/cm5）</a> Parcel包构建本地库（详见文章‘环境搭建文档’），手动更新</p>
@@ -555,9 +559,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Kafka/" rel="tag"># Kafka</a>
-          
             <a href="/tags/Cloudera/" rel="tag"># Cloudera</a>
+          
+            <a href="/tags/Kafka/" rel="tag"># Kafka</a>
           
         </div>
       
@@ -659,7 +663,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">21</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -670,7 +674,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -681,7 +685,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-count">33</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

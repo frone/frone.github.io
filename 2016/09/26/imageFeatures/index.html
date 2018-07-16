@@ -355,7 +355,7 @@
 <the rest="" of="" contents="" |="" 余下全文="">
 
 
-<p>代码库地址： <a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:similarCards.git</p>
+<p>代码库地址： git@192.168.30.251:similarCards.git</p>
 <h3 id="使用hash函数将图片转化为指纹"><a href="#使用hash函数将图片转化为指纹" class="headerlink" title="使用hash函数将图片转化为指纹"></a>使用hash函数将图片转化为指纹</h3><p>参照： <a href="https://github.com/paul-schwendenman/imagehash2" target="_blank" rel="noopener">https://github.com/paul-schwendenman/imagehash2</a></p>
 <p>使用imagehash获取图片的fingerprint，建立指纹库，然后每次查找指纹的编辑距离最近的几个图片作为候选</p>
 <h3 id="使用BOVW算法"><a href="#使用BOVW算法" class="headerlink" title="使用BOVW算法"></a>使用BOVW算法</h3><p>参见代码：192.168.30.251:/opt/workspace/imgSimilarity/clustering/vocabulary.py</p>
@@ -371,20 +371,14 @@
 <li>LIRE</li>
 </ul>
 <blockquote>
-<p>基于Lire的图像检索：<br>—— by mazf<br>1、代码：<a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:OraImageRetrival.git<br>2、代码说明：</p>
+<p>基于Lire的图像检索：<br>—— by mazf<br>1、代码：git@192.168.30.251:OraImageRetrival.git<br>2、代码说明：</p>
 <blockquote>
-<p>2.1 代码有两个部分，都是Java文件，有详细的注释：<br>–OraIndexer：用来构建索引<br>–OraSearcher：根据构建好的索引，进行图像检索</p>
+<p>2.1 代码有两个部分，都是Java文件，有详细的注释：<br>—OraIndexer：用来构建索引<br>—OraSearcher：根据构建好的索引，进行图像检索</p>
 <blockquote>
-<p><strong>OraIndexer</strong> 是一个单线程程序，所以，构建索引比较慢，解决方法是加入多线程<br>要创建索引，需要一个文档构建对象LocalDocumentBuilder，并给该对象传入提取图像特征的方法，Lire提供了很多特征提取的方法，本程序采用的是快速sift方法CvSurfExtractor。有了LocalDocumentBuilder对象后，可以对图像创建一文档Document，并将该文档写入索引，代码如下：<br><br><em>// 创建一个文档对象（Lucene的概念）<br>LocalDocumentBuilder localDocumentBuilder = new LocalDocumentBuilder();<br>// 给文档对象添加一个提取器，使用Surf的提取器，传入码表<br>localDocumentBuilder.addExtractor(CvSurfExtractor.class, Cluster.readClusters(codeBook));<br>// 读取图像文件，并用文档对象创建一个文档<br>BufferedImage img = ImageIO.read(new FileInputStream(imageFilePath));<br>Document doc = localDocumentBuilder.createDocument(img, imageFilePath);<br>// 将图像文档写入索引，iw是IndexWriter对象<br>iw.addDocument(doc);</em><br><br><br><strong>OraSearch</strong> 是图像检索对象，检索速度在2s左右，很快。<br>检索和创建索引要匹配，都需要使用相同的特征提取方法，这里使用CvSurfExtractor特征提取<br>检索的过程需要三个主要的对象：索引读取对象，搜索对象，匹配对象<br><br><em>// 创建 索引读取对象，搜索对象，匹配对象<br>// 同样，需要将CvSurfExtractor传给搜索对象，hits中保存的是匹配命中的图像文档对象<br>IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));<br>ImageSearcher searcher = new GenericFastImageSearcher(resCnt, CvSurfExtractor.class, new BOVW(),128, true, reader, codeBook);<br>ImageSearchHits hits = searcher.search(ImageIO.read(new File(imageName)), reader);</em><br></p>
+<p><strong>OraIndexer</strong> 是一个单线程程序，所以，构建索引比较慢，解决方法是加入多线程<br>要创建索引，需要一个文档构建对象LocalDocumentBuilder，并给该对象传入提取图像特征的方法，Lire提供了很多特征提取的方法，本程序采用的是快速sift方法CvSurfExtractor。有了LocalDocumentBuilder对象后，可以对图像创建一文档Document，并将该文档写入索引，代码如下：<br>&lt;/br&gt;<em>// 创建一个文档对象（Lucene的概念）<br>LocalDocumentBuilder localDocumentBuilder = new LocalDocumentBuilder();<br>// 给文档对象添加一个提取器，使用Surf的提取器，传入码表<br>localDocumentBuilder.addExtractor(CvSurfExtractor.class, Cluster.readClusters(codeBook));<br>// 读取图像文件，并用文档对象创建一个文档<br>BufferedImage img = ImageIO.read(new FileInputStream(imageFilePath));<br>Document doc = localDocumentBuilder.createDocument(img, imageFilePath);<br>// 将图像文档写入索引，iw是IndexWriter对象<br>iw.addDocument(doc);</em><br>&lt;/br&gt;<br><strong>OraSearch</strong> 是图像检索对象，检索速度在2s左右，很快。<br>检索和创建索引要匹配，都需要使用相同的特征提取方法，这里使用CvSurfExtractor特征提取<br>检索的过程需要三个主要的对象：索引读取对象，搜索对象，匹配对象<br>&lt;/br&gt;<em>// 创建 索引读取对象，搜索对象，匹配对象<br>// 同样，需要将CvSurfExtractor传给搜索对象，hits中保存的是匹配命中的图像文档对象<br>IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));<br>ImageSearcher searcher = new GenericFastImageSearcher(resCnt, CvSurfExtractor.class, new BOVW(),128, true, reader, codeBook);<br>ImageSearchHits hits = searcher.search(ImageIO.read(new File(imageName)), reader);</em>&lt;/br&gt;</p>
 </blockquote>
+<p>2.2 目录介绍<br>—CardImages：用于测试的名片图片<br>—CodeBook： CvSURF128码表，不需要修改<br>—ImageIndex： Lire生成的索引目录</p>
 </blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
-<p>2.2 目录介绍<br>–CardImages：用于测试的名片图片<br>–CodeBook： CvSURF128码表，不需要修改<br>–ImageIndex： Lire生成的索引目录</p>
-</blockquote>
-</blockquote>
-<blockquote>
 <p>3、备注：<br>程序在Windows下编译，如果在Linux和Mac上，要重新编译Lire库<br>Lire源程序在 251 上我的目录下：Lire-1.0b2.zip<br>用idea打开，用 maven 编译就可以了</p>
 </blockquote>
 <h3 id="相关调研工作见：-192-168-30-251"><a href="#相关调研工作见：-192-168-30-251" class="headerlink" title="相关调研工作见：(192.168.30.251)"></a>相关调研工作见：(192.168.30.251)</h3><p>  /opt/workspace/imgSimilarity<br>  /opt/workspace/similarCards</p>
@@ -519,7 +513,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">21</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -530,7 +524,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -541,7 +535,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-count">33</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

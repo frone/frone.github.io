@@ -269,6 +269,167 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/如何在hexo中支持Mathjax/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/16/如何在hexo中支持Mathjax/" itemprop="url">如何在hexo中支持Mathjax</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T18:11:51+08:00">
+                2018-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hexo/" itemprop="url" rel="index">
+                    <span itemprop="name">Hexo</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/07/16/如何在hexo中支持Mathjax/" class="leancloud_visitors" data-flag-title="如何在hexo中支持Mathjax">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="第一步：-使用Kramed代替-Marked"><a href="#第一步：-使用Kramed代替-Marked" class="headerlink" title="第一步： 使用Kramed代替 Marked"></a>第一步： 使用Kramed代替 Marked</h3><p>hexo 默认的渲染引擎是 marked，但是 marked 不支持 mathjax。 kramed 是在 marked 的基础上进行修改。我们在工程目录下执行以下命令来安装 kramed.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm uninstall hexo-renderer-marked --save</span><br><span class="line">npm install hexo-renderer-kramed --save</span><br></pre></td></tr></table></figure></p>
+<p>然后，更改/node_modules/hexo-renderer-kramed/lib/renderer.js，更改<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// Change inline math rule</span><br><span class="line">function formatText(text) &#123;</span><br><span class="line">    // Fit kramed&apos;s rule: $$ + \1 + $$</span><br><span class="line">    return text.replace(/`\$(.*?)\$`/g, &apos;$$$$$1$$$$&apos;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// Change inline math rule</span><br><span class="line">function formatText(text) &#123;</span><br><span class="line">    return text;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="第二步-停止使用-hexo-math"><a href="#第二步-停止使用-hexo-math" class="headerlink" title="第二步: 停止使用 hexo-math"></a>第二步: 停止使用 hexo-math</h3><p>首先，如果你已经安装 hexo-math, 请卸载它,然后安装 hexo-renderer-mathjax 包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm uninstall hexo-math --save</span><br><span class="line">npm install hexo-renderer-mathjax --save</span><br></pre></td></tr></table></figure></p>
+<h3 id="第三步-更改默认转义规则"><a href="#第三步-更改默认转义规则" class="headerlink" title="第三步: 更改默认转义规则"></a>第三步: 更改默认转义规则</h3><p>因为 hexo 默认的转义规则会将一些字符进行转义，比如 _ 转为 <em>, 所以我们需要对默认的规则进行修改.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi node_modules/kramed/lib/rules/nline.js</span><br></pre></td></tr></table></figure></em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 替换11行</span><br><span class="line">escape: /^\\([\\`*&#123;&#125;\[\]()#$+\-.!_&gt;])/,</span><br><span class="line">//修改为</span><br><span class="line">escape: /^\\([`*\[\]()# +\-.!_&gt;])/,</span><br><span class="line"></span><br><span class="line">//替换20行</span><br><span class="line">em: /^\b_((?:__|[\s\S])+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,</span><br><span class="line">//修改为</span><br><span class="line">em: /^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,</span><br></pre></td></tr></table></figure>
+<h3 id="第四步-开启mathjax"><a href="#第四步-开启mathjax" class="headerlink" title="第四步: 开启mathjax"></a>第四步: 开启mathjax</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi themes/next/_config.yml</span><br></pre></td></tr></table></figure>
+<p>开启 mathjax功能<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mathjax:</span><br><span class="line">  enable: true</span><br><span class="line">  perpage: false</span><br><span class="line">  cdn: //cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML</span><br></pre></td></tr></table></figure></p>
+<p>并在博客中使用mathjax<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: Testing Mathjax with Hexo</span><br><span class="line">category: Uncategorized</span><br><span class="line">date: 2017/05/03</span><br><span class="line">mathjax: true</span><br><span class="line">---</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/jaro-winkler算法原理和应用/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -375,7 +536,7 @@
           
             <h3 id="算法简介"><a href="#算法简介" class="headerlink" title="算法简介"></a>算法简介</h3><p>The Jaro–Winkler distance (Winkler, 1990)是计算2个字符串之间相似度的一种算法。它是Jaro distance算法的变种。主要用于record linkage/数据连接（duplicate detection/重复记录）方面的领域，Jaro–Winkler distance最后得分越高说明相似度越大。Jaro–Winkler distance 是适合于串比如名字这样较短的字符之间计算相似度。0分表示没有任何相似度，1分则代表完全匹配。</p>
 <h3 id="算法定义"><a href="#算法定义" class="headerlink" title="算法定义"></a>算法定义</h3><ol>
-<li>The Jaro distance算法最后得分公式：<br>$$ d_j = \frac{1}{3}\left(\frac{m}{|s1|} + \frac{m}{|s2|} + \frac{m-t}{m} \right) $$<br>其中:   </li>
+<li>The Jaro distance算法最后得分公式：<script type="math/tex; mode=display">d_j = \frac{1}{3}\left(\frac{m}{|s1|} + \frac{m}{|s2|} + \frac{m-t}{m} \right)</script>其中:   </li>
 </ol>
 <ul>
 <li>s1、s2 是要比对的两个字符</li>
@@ -383,22 +544,22 @@
 <li>m是匹配的字符数</li>
 <li>t  是换位的数目</li>
 </ul>
-<ol start="2">
-<li>Match Window(匹配窗口)计算公式<br>$$MW=\left(\frac{MAX(|s1|,|s2|)}{2}\right) - 1$$<br>其中：</li>
+<ol>
+<li>Match Window(匹配窗口)计算公式<script type="math/tex; mode=display">MW=\left(\frac{MAX(|s1|,|s2|)}{2}\right) - 1</script>其中：</li>
 </ol>
 <ul>
 <li>s1、s2 是要比对的两个字符</li>
 <li>MW是匹配窗口值</li>
 </ul>
-<ol start="3">
+<ol>
 <li>上述公式解释</li>
 </ol>
 <ul>
 <li>字符串s1与字符串s2在做匹配计算时，当两个字符的距离不大于公式二的最后结果(匹配窗口)即认为是匹配的。</li>
 <li>当s1、s2中字符相匹配但是字符位置不一样时发生换位操作、而公式一中换位的数目t为不同顺序的匹配字符的数目的一半。比如:两个字符串CRATE和TRACE做匹配操作，字符串中仅有’R’ ‘A’ ‘E’三个字符是匹配的，即m=3。为什么’C’, ‘T’不算做是匹配的呢。因为虽然’C’, ‘T’都出现在两个字符串中，但是通过公式二得出匹配窗口值为 (5/2)-1=1.5。而两个字符串中’C’, ‘T’字符的距离均大于1.5。所以不算做匹配。因此t=0。在另一组字符串DwAyNE 与 DuANE 。匹配的字符D-A-N-E 在两个字符串中有相同的字符顺序，所以不需要进行换位操作，因此t=0,m=4。</li>
 </ul>
-<ol start="4">
-<li>Jaro–Winkler distance算法公式<br>Jaro-Winkler算法给予了起始部分就相同的字符串更高的分数，它定义了一个前缀范围p，对于要匹配的两个字符串，如果前缀部分有长度为L的部分字符串相同，则Jaro-Winkler Distance为:<br>$$d_w = d_j + L * P(1 - d_J)$$<br>其中:   </li>
+<ol>
+<li>Jaro–Winkler distance算法公式<br>Jaro-Winkler算法给予了起始部分就相同的字符串更高的分数，它定义了一个前缀范围p，对于要匹配的两个字符串，如果前缀部分有长度为L的部分字符串相同，则Jaro-Winkler Distance为:<script type="math/tex; mode=display">d_w = d_j + L * P(1 - d_J)</script>其中:   </li>
 </ol>
 <ul>
 <li>$d_j$是Jaro distance最后得分</li>
@@ -410,7 +571,7 @@
 <li>m = 6</li>
 <li>|s1| = 6</li>
 <li>|s2| = 6</li>
-<li>两组字符T/H和H/T要进行换位操作，因此t=2/2=1;<br>我们可以根据公式一得出Jaro得分：<br>$$d_j = \frac{1}{3}\left(\frac{6}{|6|} + \frac{6}{|6|} + \frac{6-1}{6}\right)$$<br>如果使用Jaro–Winkler，并且取范围因子P=0.1,我们会得出:<br>P=0.1<br>L=3<br>$d_w = 0.944 + (3 * 0.1(1 - 0.944))=0.961$</li>
+<li>两组字符T/H和H/T要进行换位操作，因此t=2/2=1;<br>我们可以根据公式一得出Jaro得分：<script type="math/tex; mode=display">d_j = \frac{1}{3}\left(\frac{6}{|6|} + \frac{6}{|6|} + \frac{6-1}{6}\right)</script>如果使用Jaro–Winkler，并且取范围因子P=0.1,我们会得出:<br>P=0.1<br>L=3<br>$d_w = 0.944 + (3 * 0.1(1 - 0.944))=0.961$</li>
 </ul>
 <h3 id="python-运行"><a href="#python-运行" class="headerlink" title="python 运行"></a>python 运行</h3><ol>
 <li><p>安装lib</p>
@@ -1388,20 +1549,20 @@ WHERE  MONTH(bill_time) == "%s" AND user_id = "%s"</font></pre>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"># !/Users/xieqj/py_env/venv python</span><br><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">import threading</span><br><span class="line">from mg_handling import msgPushing, userPromotion, operationActivity</span><br><span class="line">import util.comm as cm</span><br><span class="line">import time</span><br><span class="line"></span><br><span class="line"># 资讯推送</span><br><span class="line">def msg_pushing():</span><br><span class="line">    while (True):</span><br><span class="line">        mp = msgPushing.MsgPushing()</span><br><span class="line">        msg_contents = mp.scanDBForSending()</span><br><span class="line">        mp.insert_msg2mq(msg_contents)</span><br><span class="line">        mp.mark_msg_as_sent(msg_contents)</span><br><span class="line">        mp.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"># 用户推广</span><br><span class="line">def user_promotion():</span><br><span class="line">    while (True):</span><br><span class="line">        mp = userPromotion.UserPromotion()</span><br><span class="line">        msg_contents = mp.scanDBForSending()</span><br><span class="line">        mp.insert_msg2mq(msg_contents)</span><br><span class="line">        mp.mark_msg_as_sent(msg_contents)</span><br><span class="line">        mp.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"># 活动管理</span><br><span class="line">def operation_activity():</span><br><span class="line">    while (True):</span><br><span class="line">        oa = operationActivity.OperationActivity()</span><br><span class="line">        msg_contents = oa.scanDBForSending()</span><br><span class="line">        oa.insert_msg2mq(msg_contents)</span><br><span class="line">        oa.mark_msg_as_sent(msg_contents)</span><br><span class="line">        oa.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 通过多线程同时启动两个步骤</span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    cm.initLog(&quot;pushing.log&quot;, &quot;INFO&quot;)</span><br><span class="line">    threads = []</span><br><span class="line">    t1 = threading.Thread(target=msg_pushing)</span><br><span class="line">    threads.append(t1)</span><br><span class="line">    t2 = threading.Thread(target=user_promotion)</span><br><span class="line">    threads.append(t2)</span><br><span class="line">    t3 = threading.Thread(target=operation_activity)</span><br><span class="line">    threads.append(t3)</span><br><span class="line">    for t in threads:</span><br><span class="line">        t.setDaemon(True)</span><br><span class="line">        t.start()</span><br><span class="line">    t.join()</span><br></pre></td></tr></table></figure>
 <h3 id="资讯推送"><a href="#资讯推送" class="headerlink" title="资讯推送"></a>资讯推送</h3><p>读取表 sns_qa_push_setting 中的资讯，将其按照region，industry，func（职能）推送给对应群组的用户。<br>具体方法就是将表 sns_qa_push_setting 中的 content 1对1的推送给表 account_basic 中对应群组的用户，即插入 message_queue 表。</p>
 <p>需要注意控制推送时间，和在推送后 update 表 sns_qa_push_setting 中 status 字段</p>
-<h4 id="仓库位置"><a href="#仓库位置" class="headerlink" title="仓库位置"></a>仓库位置</h4><p><a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:message_handling.git</p>
+<h4 id="仓库位置"><a href="#仓库位置" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
 <p>{“messagetype”: 230,”params”: { “data”: [{“newsid”: “ EwtNMSASOSvxjerhni98uQyEXnDIp9fS”,”title”: “发布到审核”,”url”: “资讯  URL”, “coverurl”: “https: //oradtdev.s3.cn-north-  1.amazonaws.com.cn/ukIv0BqxtnjRgjuhJcGKO6jze1liPmZE/gm9YtnBtvQ20160921132139.jpg”,”createdtime”: “1474435299” } ]}}</p>
 <h4 id="数据表"><a href="#数据表" class="headerlink" title="数据表"></a>数据表</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `industry_category` (</span><br><span class="line">  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `category_id` char(8) NOT NULL,</span><br><span class="line">  `parent_id` char(8) NOT NULL,</span><br><span class="line">  `name` varchar(128) NOT NULL COMMENT &apos;行业名称&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;国家统计局的两级行业分类标准&apos;</span><br><span class="line"></span><br><span class="line"># 保存从名片的json数据解析出来的数据 name * region</span><br><span class="line">CREATE TABLE `card_info_jsonver` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `card_id` char(32) DEFAULT &apos;&apos; COMMENT &apos;名片id&apos;,</span><br><span class="line">  `user_id` char(40) DEFAULT &apos;&apos; COMMENT &apos;用户id&apos;,</span><br><span class="line">  `side` tinyint(4) DEFAULT &apos;0&apos; COMMENT &apos;名片的正反面，0：正面，1：反面&apos;,</span><br><span class="line">  `name` varchar(128) DEFAULT &apos;&apos; COMMENT &apos;名片上的名字&apos;,</span><br><span class="line">  `mobile` varchar(20) DEFAULT &apos;&apos; COMMENT &apos;手机号&apos;,</span><br><span class="line">  `provinceM` varchar(64) DEFAULT &apos;&apos; COMMENT &apos;手机号解出来的省份&apos;,</span><br><span class="line">  `provinceM_code` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;省份编码&apos;,</span><br><span class="line">  `cityM` varchar(64) DEFAULT &apos;&apos; COMMENT &apos;城市&apos;,</span><br><span class="line">  `cityM_code` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;城市编码&apos;,</span><br><span class="line">  `created_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT &apos;名片创建时间&apos;,</span><br><span class="line">  `updated_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT &apos;名片更新时间&apos;,</span><br><span class="line">  `handle_state` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;处理状态&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=42333 DEFAULT CHARSET=utf8 COMMENT=&apos;保存从名片的json数据解析出来的数据&apos;</span><br><span class="line"></span><br><span class="line"># 从名片json数据解析出来的公司信息 companyName * func</span><br><span class="line">CREATE TABLE `company_info_jsonVer` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `card_id` char(32) DEFAULT NULL COMMENT &apos;名片id&apos;,</span><br><span class="line">  `user_id` char(40) DEFAULT NULL COMMENT &apos;用户id&apos;,</span><br><span class="line">  `companyName` varchar(128) DEFAULT NULL COMMENT &apos;公司名称&apos;,</span><br><span class="line">  `industry` varchar(128) DEFAULT NULL COMMENT &apos;二级行业&apos;,</span><br><span class="line">  `ind_code` char(8) DEFAULT NULL COMMENT &apos;二级行业编码&apos;,</span><br><span class="line">  `title` char(64) DEFAULT NULL COMMENT &apos;职位&apos;,</span><br><span class="line">  `func_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT &apos;职能名称&apos;,</span><br><span class="line">  `func_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT &apos;职能编号&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;从名片json数据解析出来的公司信息&apos;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">消息类型</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">    &quot;messagetype&quot;: 230,</span><br><span class="line">    &quot;params&quot;: &#123;</span><br><span class="line">        &quot;data&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;newsid&quot;: 资讯id,   </span><br><span class="line">                &quot;title&quot;: &quot;资讯标题&quot;,</span><br><span class="line">               &quot;url&quot;: &quot;资讯URL&quot;,</span><br><span class="line">                &quot;coverurl&quot;: &quot;封面URL&quot;,</span><br><span class="line">            &#125;,</span><br><span class="line">            ....</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">注：排序 按照data中数组的顺序</span><br></pre></td></tr></table></figure>
 <hr>
 <h3 id="用户推广"><a href="#用户推广" class="headerlink" title="用户推广"></a>用户推广</h3><p>基本流程与咨询推送相同</p>
-<h4 id="仓库位置-1"><a href="#仓库位置-1" class="headerlink" title="仓库位置"></a>仓库位置</h4><p><a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:message_handling.git</p>
-<p><a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:effective.git</p>
+<h4 id="仓库位置-1"><a href="#仓库位置-1" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
+<p>git@192.168.30.251:effective.git</p>
 <p>userPromotion.py</p>
 <h4 id="推广表"><a href="#推广表" class="headerlink" title="推广表"></a>推广表</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `sys_user_promotion` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `pro_id` char(32) NOT NULL COMMENT &apos;推广ID&apos;,</span><br><span class="line">  `type` tinyint(2) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;推送方式：1：内部 2：邮件 3：短信&apos;,</span><br><span class="line">  `isalluser` tinyint(2) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;1发送注册用户2发送全部用户&apos;,</span><br><span class="line">  `push_time` int(10) NOT NULL COMMENT &apos;设置的推送时间&apos;,</span><br><span class="line">  `region` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;地区（多个,号隔开）&apos;,</span><br><span class="line">  `industry` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;行业（多个,号隔开）&apos;,</span><br><span class="line">  `func` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;职能（多个,号隔开）&apos;,</span><br><span class="line">  `title` varchar(50) CHARACTER SET utf8mb4 DEFAULT &apos;&apos; COMMENT &apos;标题&apos;,</span><br><span class="line">  `content` text NOT NULL COMMENT &apos;推送的内容&apos;,</span><br><span class="line">  `created_time` int(10) NOT NULL COMMENT &apos;添加时间&apos;,</span><br><span class="line">  `admin_id` char(40) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;设置人&apos;,</span><br><span class="line">  `status` tinyint(2) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;状态 1：未发 2：已发&apos;,</span><br><span class="line">  `isntice` tinyint(2) DEFAULT &apos;0&apos; COMMENT &apos;是否通知&apos;,</span><br><span class="line">  `url` varchar(256) NOT NULL COMMENT &apos;url地址&apos;,</span><br><span class="line">  `json_data` text NOT NULL COMMENT &apos;推送json格式&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8 COMMENT=&apos;运营后台-用户推广表&apos;</span><br><span class="line"></span><br><span class="line">-- 存储type为2，3的用户推广</span><br><span class="line">CREATE TABLE `message_promotion` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `type` tinyint(4) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;类型：1-内部，2-邮件，3-短信&apos;,</span><br><span class="line">  `mobile` varchar(18) DEFAULT &apos;&apos; COMMENT &apos;手机号&apos;,</span><br><span class="line">  `email` varchar(256) DEFAULT &apos;&apos; COMMENT &apos;邮箱&apos;,</span><br><span class="line">  `title` varchar(100) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;标题&apos;,</span><br><span class="line">  `content` text NOT NULL COMMENT &apos;消息内容&apos;,</span><br><span class="line">  `created_time` int(11) DEFAULT NULL COMMENT &apos;创建时间&apos;,</span><br><span class="line">  `modified_time` int(11) DEFAULT NULL COMMENT &apos;修改时间&apos;,</span><br><span class="line">  `status` tinyint(4) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;状态：0-未发送，1-已发送，2-发送失败&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT=&apos;推广消息表&apos;</span><br><span class="line"> </span><br><span class="line">推广消息类型</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;:231,</span><br><span class="line">  &quot;params&quot;:&#123;</span><br><span class="line">     &quot;id&quot;:&quot;文章id&quot;，</span><br><span class="line">      &quot;title&quot;: &quot;资讯标题&quot;,</span><br><span class="line">      &quot;content&quot;:&quot;内容&quot;，</span><br><span class="line">      &quot;createdtime&quot;: &quot;1345764830&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;: 231,</span><br><span class="line">  &quot;params&quot;: &#123;</span><br><span class="line">    &quot;content&quot;: &quot;hello world！&lt;br/&gt;&quot;,</span><br><span class="line">    &quot;createdtime&quot;: 1483620281,</span><br><span class="line">    &quot;id&quot;: &quot;zlJjJD6gDvjCdoMcibqCWOGrMo7vbB0b&quot;,</span><br><span class="line">    &quot;image&quot;: &quot;&quot;,</span><br><span class="line">    &quot;title&quot;: &quot;推送测试&quot;,</span><br><span class="line">    &quot;type&quot;: &quot;user&quot;,</span><br><span class="line">    &quot;url&quot;: &quot;h5/News/secretary?type=promotion&amp;id=zlJjJD6gDvjCdoMcibqCWOGrMo7vbB0b&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <hr>
 <h3 id="活动管理"><a href="#活动管理" class="headerlink" title="活动管理"></a>活动管理</h3><h4 id="背景说明"><a href="#背景说明" class="headerlink" title="背景说明"></a>背景说明</h4><p>系统中，内容管理-推送、运营管理-新增推广、运营管理-新增活动页面中，地区、行业、职能选择时，弹窗样式与“内容管理-推送”样式相同，具体请参见原型</p>
 <p>进行推送时，匹配规则如下：<br>a)  行业：第一次使用APP时所选行业+当前默认身份的并集。采用1级行业-2级行业模式划分<br>b)  地区：第一次使用APP时所选手机号+当前默认身份的并集。采用1级地区-2级地区模式划分<br>c)  职能：当前默认身份。采用1级行业-职能（只有1级）模式划分</p>
 <p>当前默认身份cardid需要通过表 account_basic_detail 的 card_id 字段得到</p>
-<h4 id="业务流程"><a href="#业务流程" class="headerlink" title="业务流程"></a>业务流程</h4><h4 id="仓库位置-2"><a href="#仓库位置-2" class="headerlink" title="仓库位置"></a>仓库位置</h4><p><a href="mailto:git@192.168.30.251" target="_blank" rel="noopener">git@192.168.30.251</a>:message_handling.git</p>
+<h4 id="业务流程"><a href="#业务流程" class="headerlink" title="业务流程"></a>业务流程</h4><h4 id="仓库位置-2"><a href="#仓库位置-2" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
 <p>OperationActivity</p>
 <h4 id="活动表结构"><a href="#活动表结构" class="headerlink" title="活动表结构"></a>活动表结构</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `operation_activity` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `activity_id` char(32) CHARACTER SET utf8 NOT NULL COMMENT &apos;活动id&apos;,</span><br><span class="line">  `type` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;类型 1:活动 2:资讯&apos;,</span><br><span class="line">  `isnotify` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;1:不通知 2:通知&apos;,</span><br><span class="line">  `push_state` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;isnotify为2时有效，1:未推送，2:已推送&apos;,</span><br><span class="line">  `region` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;地区（多个,号隔开）&apos;,</span><br><span class="line">  `industry` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;行业（多个,号隔开）&apos;,</span><br><span class="line">  `func` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;职能（多个,号隔开）&apos;,</span><br><span class="line">  `show_id` varchar(400) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;资讯shwo_id（多个,号隔开）type为2时有效&apos;,</span><br><span class="line">  `image` varchar(256) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;标题图片&apos;,</span><br><span class="line">  `title` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;活动标题 type为1时使用&apos;,</span><br><span class="line">  `content` text CHARACTER SET utf8 COMMENT &apos;活动标题 type为1时使用&apos;,</span><br><span class="line">  `onlinetime` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;上线时间&apos;,</span><br><span class="line">  `offlinetime` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;下线时间&apos;,</span><br><span class="line">  `user_id` char(40) CHARACTER SET utf8 NOT NULL COMMENT &apos;发布人用户id&apos;,</span><br><span class="line">  `created_time` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;创建时间&apos;,</span><br><span class="line">  `modify_time` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;修改时间&apos;,</span><br><span class="line">  `state` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;状态 1:未发布 2:已发布 3:已下线 4:已删除&apos;,</span><br><span class="line">  `click_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;点击量&apos;,</span><br><span class="line">  `share_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;分享量&apos;,</span><br><span class="line">  `share_user_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;分享用户量&apos;,</span><br><span class="line">  `push_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;推送用户量&apos;,</span><br><span class="line">  `url` varchar(256) NOT NULL COMMENT &apos;URL地址&apos;,</span><br><span class="line">  `json_data` text NOT NULL,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  UNIQUE KEY `activity_id` (`activity_id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COMMENT=&apos;运营活动表&apos;</span><br><span class="line"></span><br><span class="line">推送类型</span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;:231,</span><br><span class="line">  &quot;params&quot;:&#123;</span><br><span class="line">      &quot;id&quot;:&quot;文章id&quot;，</span><br><span class="line">      &quot;title&quot;: &quot;标题&quot;,</span><br><span class="line">      &quot;content&quot;:&quot;内容&quot;，</span><br><span class="line">      &quot;createdtime&quot;: &quot;1345764830&quot;,</span><br><span class="line">      &quot;image&quot;:&quot;图片URL&quot;，</span><br><span class="line">      &quot;type&quot;:&quot;活动（activity）或者用户推广（user）&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <hr>
@@ -1980,156 +2141,8 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
 </code></pre><p>  9.不同数据类型关联产生数据倾斜，默认的Hash操作会按int型的id来分配reduce，这样会导致所有的String</p>
 <pre><code>类型数据分配到同一个reduce。
 </code></pre><p>  10.使用 mapjoin 解决小表(记录数少)关联大表的数据倾斜问题，这个方法使用的频率非常高，但如果小表</p>
-<pre><code>很大，大到map join会出现bug或异常，这时就需要特别的处理。
+<pre><code> 很大，大到map join会出现bug或异常，这时就需要特别的处理。
 </code></pre>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/24/HEXO 安装使用说明/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/10/24/HEXO 安装使用说明/" itemprop="url">HEXO 安装使用说明</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-24T12:21:51+08:00">
-                2016-10-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2016/10/24/HEXO 安装使用说明/" class="leancloud_visitors" data-flag-title="HEXO 安装使用说明">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><ol>
-<li>安装node.js: <a href="https://nodejs.org/en/" target="_blank" rel="noopener">https://nodejs.org/en/</a></li>
-<li>npm install hexo-cli -g</li>
-<li>hexo init blog</li>
-<li>cd blog</li>
-<li>npm install</li>
-<li>hexo server</li>
-</ol>
-<h2 id="251-部署信息"><a href="#251-部署信息" class="headerlink" title="251 部署信息"></a>251 部署信息</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#在服务器端使用supervisor维护后台进程</span><br><span class="line">supervisorctl start|stop|restart dmsite</span><br><span class="line">配置文件：/etc/supervisor/conf.d/hexo.conf</span><br><span class="line"></span><br><span class="line">192.168.30.251:4000</span><br><span class="line">站点位置：/opt/workspace/hexo/dmteam/</span><br><span class="line">文档位置：/opt/workspace/hexo/dmteam/source/_posts （markdown或HTML文件）</span><br><span class="line">启动服务：hexo server</span><br></pre></td></tr></table></figure>
-<h3 id="使用leancloud"><a href="#使用leancloud" class="headerlink" title="使用leancloud"></a>使用leancloud</h3><p><a href="https://notes.wanghao.work/2015-10-21-%E4%B8%BANexT%E4%B8%BB%E9%A2%98%E6%B7%BB%E5%8A%A0%E6%96%87%E7%AB%A0%E9%98%85%E8%AF%BB%E9%87%8F%E7%BB%9F%E8%AE%A1%E5%8A%9F%E8%83%BD.html#%E9%85%8D%E7%BD%AELeanCloud" target="_blank" rel="noopener">为NexT主题添加文章阅读量统计功能</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">APP ID: ohqkXUU5txOlX3MjJPCrw7jG-gzGzoHsz</span><br><span class="line">APP KEY: bPQhLzRSEsTqdIKAGRcHLhyN</span><br><span class="line">MASTER KEY: lRx8SU65bjP4SA8cRjMSDwy8</span><br></pre></td></tr></table></figure>
-<h3 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h3><ul>
-<li><a href="https://hexo.io/" target="_blank" rel="noopener">官网</a></li>
-<li><a href="http://theme-next.iissnan.com/" target="_blank" rel="noopener">NexT使用文档</a></li>
-<li><a href="https://github.com/iissnan/hexo-theme-next/blob/master/README.md" target="_blank" rel="noopener">NexT@github</a></li>
-<li><a href="https://leancloud.cn/" target="_blank" rel="noopener">leancloud</a></li>
-<li><a href="http://www.qiniu.com/" target="_blank" rel="noopener">七牛云</a></li>
-</ul>
-
           
         
       
@@ -2168,7 +2181,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2214,7 +2227,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">21</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2225,7 +2238,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -2236,7 +2249,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-count">33</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
