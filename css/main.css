@@ -1823,7 +1823,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #e234b6;
+  background: #ff62f1;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -2617,7 +2617,6 @@ pre .javascript .function {
   overflow: hidden;
   padding: 0;
   width: 240px;
-  background: #fff;
   box-shadow: initial;
   border-radius: initial;
 }
@@ -2676,7 +2675,6 @@ pre .javascript .function {
   box-sizing: border-box;
   padding: 40px;
   width: 700px;
-  background: #fff;
   min-height: 700px;
   box-shadow: initial;
   border-radius: initial;
@@ -2990,4 +2988,20 @@ pre .javascript .function {
   .post-body {
     text-align: justify;
   }
+}
+body {
+  background: url("/images/sim002.jpg") no-repeat;
+/* 背景图垂直、水平均居中 */
+  background-position: center center;
+/* 当内容高度大于图片高度时，背景图像的位置相对于viewport固定 */
+  background-attachment: fixed;
+/* 让背景图基于容器大小伸缩 */
+  background-size: cover;
+/* 设置背景颜色，背景图加载过程中会显示背景色 */
+  background-color: rgba(0,0,0,0.5);
+}
+.content {
+  border-radius: 20px;
+  padding: 30px 60px 30px 60px;
+  background: rgba(255,255,255,0.8) none repeat scroll !important;
 }
