@@ -269,6 +269,1265 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/30/airflow EmailOperator 发送邮件问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/30/airflow EmailOperator 发送邮件问题/" itemprop="url">airflow EmailOperator 发送邮件 附件文件名丢失或乱码问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-30T08:21:51+08:00">
+                2018-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/任务调度/" itemprop="url" rel="index">
+                    <span itemprop="name">任务调度</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/30/airflow EmailOperator 发送邮件问题/" class="leancloud_visitors" data-flag-title="airflow EmailOperator 发送邮件 附件文件名丢失或乱码问题">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="开始使用airflow"><a href="#开始使用airflow" class="headerlink" title="开始使用airflow"></a>开始使用airflow</h3><p>最早开始使用airflow是因为公司的服务过度 依赖crontab了，完全通过时间进行任务调度，而且不便于追踪任务运行情况，也不好处理任务之间的依赖关系。更不要说管理多服务器的crontab问题了。</p>
+<p>于是自己进行软件选型，查阅相关资料。因为本身是做数据工作的，不希望只是一个简简单单的crontab功能升级，于是选择了airflow。</p>
+<p>airflow的主要特点如下：</p>
+<ul>
+<li>我们可以将一些常做的巡检任务，定时脚本（如 crontab ），ETL处理，监控等任务放在 airflow 上集中管理，甚至都不用再写监控脚本，作业出错会自动发送日志到指定人员邮箱，低成本高效率地解决生产问题。</li>
+<li>Airflow 适用于调度作业较为复杂，特别是各作业之间的依赖关系复杂的情况​</li>
+</ul>
+<p>备选是cronsun</p>
+<ul>
+<li>cronsun 是一个分布式任务系统，单个结点和 *nix 机器上的 crontab 近似。支持界面管理机器上的任务，支持任务失败邮件提醒，安装简单，使用方便，是替换 crontab 一个不错的选择）</li>
+</ul>
+<p>具体关于任务调度可以参考之前转发的一篇文章，<a href="https://blog.csdn.net/frone/article/details/82218370" target="_blank" rel="noopener">浅谈工作流调度系统</a></p>
+<h3 id="使用-EmailOperator-模块发送邮件"><a href="#使用-EmailOperator-模块发送邮件" class="headerlink" title="使用 EmailOperator 模块发送邮件"></a>使用 EmailOperator 模块发送邮件</h3><p>当然写本篇文章的目的是解决使用airflow时遇到的发送邮件问题，我在使用EmailOperator发送xlsx附件的时候遇到了附件文件名丢失问题，有的客户端可以正常接收（例如mac的邮件），但是服务器端和Foxmail则遇到了问题，因为之前使用smtp发送邮件的时候遇到过类似问题，所以决定去airflow的源代码中一探究竟。<br><img src="https://img-blog.csdn.net/20180830114431733?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Zyb25l/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="附件文件名丢失"></p>
+<h3 id="修改源代码处理文件名问题"><a href="#修改源代码处理文件名问题" class="headerlink" title="修改源代码处理文件名问题"></a>修改源代码处理文件名问题</h3><p>查看源代码追踪到了问题，EmailOperator使用了 from airflow.utils.email import send_email，通过email这个类完成邮件的最终发送，所以讲问题定位到了这里。<br>第84行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">part[&apos;Content-Disposition&apos;] = &apos;attachment; filename=&quot;%s&quot;&apos; % basename</span><br><span class="line">part[&apos;Content-ID&apos;] = &apos;&lt;%s&gt;&apos; % basename</span><br></pre></td></tr></table></figure></p>
+<p>修改为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># update by frone due to email attachment reason</span><br><span class="line">part.add_header(&apos;Content-Disposition&apos;, &apos;attachment&apos;, filename=(&apos;utf-8&apos;, &apos;&apos;, basename))</span><br><span class="line">part.add_header(&apos;Content-ID&apos;,&apos;&lt;%s&gt;&apos;%basename)</span><br></pre></td></tr></table></figure></p>
+<p>最终成功解决问题，可以正常使用airflow的邮件功能了。<br><img src="https://img-blog.csdn.net/20180830114520776?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Zyb25l/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="问题得到解决"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/06/设置分区问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/06/设置分区问题/" itemprop="url">集合分区问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-06T12:23:51+08:00">
+                2018-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/06/设置分区问题/" class="leancloud_visitors" data-flag-title="集合分区问题">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p><em>本文根据PuLP文档翻译而来，原文请参考</em><br><em><a href="https://pythonhosted.org/PuLP/CaseStudies/a_set_partitioning_problem.html" target="_blank" rel="noopener">https://pythonhosted.org/PuLP/CaseStudies/a_set_partitioning_problem.html</a></em></p>
+</blockquote>
+<h3 id="集合分区问题"><a href="#集合分区问题" class="headerlink" title="集合分区问题"></a>集合分区问题</h3><hr>
+<p>集合分区问题确定如何将一个集合（S）中的项目划分为更小的子集。S中的所有项目必须包含在一个且仅包含一个分区中。相关问题是：</p>
+<ul>
+<li>集合分包- 所有项目必须包含在零个或一个分区中;</li>
+<li>集合覆盖 - 所有项目必须至少包含在一个分区中。</li>
+</ul>
+<p>在这个案例研究中，婚礼策划师必须确定婚礼的客人座位分配。为了模拟这个问题，桌子被建模为分区，邀请参加婚礼的嘉宾被建模为S的元素。婚礼策划者希望最大化所有桌子的总幸福感。<br><img src="https://pythonhosted.org/PuLP/_images/wedding_seating.jpg" alt="这里写图片描述"></p>
+<p>可以通过显式枚举每个可能的子集来建模集合划分问题。虽然这种方法确实变得难以处理大量项目（不使用列生成），但它确实具有以下优点：分区的目标函数系数可以是非线性表达式（如幸福），并且仍然可以解决此问题使用线性编程。</p>
+<p>首先，我们使用<a href="https://pythonhosted.org/PuLP/pulp.html#pulp.allcombinations" target="_blank" rel="noopener">allcombinations()</a>生成所有可能的桌座位列表。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#create list of all possible tables</span><br><span class="line">possible_tables = [tuple(c) for c in pulp.allcombinations(guests, max_table_size)]</span><br></pre></td></tr></table></figure></p>
+<p>然后我们创建一个二进制变量，如果表将在解决方案中将为1，否则为零。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#create a binary variable to state that a table setting is used</span><br><span class="line">x = pulp.LpVariable.dicts(&apos;table&apos;, possible_tables, </span><br><span class="line">                            lowBound = 0,</span><br><span class="line">                            upBound = 1,</span><br><span class="line">                            cat = pulp.LpInteger)</span><br></pre></td></tr></table></figure></p>
+<p>我们创造LpProblem然后制作目标函数。请注意，此脚本中使用的幸福函数很难以任何其他方式进行建模。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">seating_model = pulp.LpProblem(&quot;Wedding Seating Model&quot;, pulp.LpMinimize)</span><br><span class="line"></span><br><span class="line">seating_model += sum([happiness(table) * x[table] for table in possible_tables])</span><br></pre></td></tr></table></figure></p>
+<p>我们指定解决方案中允许的表总数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#specify the maximum number of tables</span><br><span class="line">seating_model += sum([x[table] for table in possible_tables]) &lt;= max_tables, \</span><br></pre></td></tr></table></figure></p>
+<p>这组约束通过保证将guest虚拟机分配给一个表来定义集合分区问题。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#A guest must seated at one and only one table</span><br><span class="line">for guest in guests:</span><br><span class="line">    seating_model += sum([x[table] for table in possible_tables</span><br><span class="line">                                if guest in table]) == 1, &quot;Must_seat_%s&quot;%guest</span><br></pre></td></tr></table></figure></p>
+<p>完整的文件可以在这里找到<a href="https://projects.coin-or.org/PuLP/browser/trunk/examples/wedding.py?format=txt" target="_blank" rel="noopener">wedding.py</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">&quot;&quot;&quot;</span><br><span class="line">A set partitioning model of a wedding seating problem</span><br><span class="line"></span><br><span class="line">Authors: Stuart Mitchell 2009</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">import pulp</span><br><span class="line"></span><br><span class="line">max_tables = 5</span><br><span class="line">max_table_size = 4</span><br><span class="line">guests = &apos;A B C D E F G I J K L M N O P Q R&apos;.split()</span><br><span class="line"></span><br><span class="line">def happiness(table):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    Find the happiness of the table</span><br><span class="line">    - by calculating the maximum distance between the letters</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    return abs(ord(table[0]) - ord(table[-1]))</span><br><span class="line">                </span><br><span class="line">#create list of all possible tables</span><br><span class="line">possible_tables = [tuple(c) for c in pulp.allcombinations(guests, </span><br><span class="line">                                        max_table_size)]</span><br><span class="line"></span><br><span class="line">#create a binary variable to state that a table setting is used</span><br><span class="line">x = pulp.LpVariable.dicts(&apos;table&apos;, possible_tables, </span><br><span class="line">                            lowBound = 0,</span><br><span class="line">                            upBound = 1,</span><br><span class="line">                            cat = pulp.LpInteger)</span><br><span class="line"></span><br><span class="line">seating_model = pulp.LpProblem(&quot;Wedding Seating Model&quot;, pulp.LpMinimize)</span><br><span class="line"></span><br><span class="line">seating_model += sum([happiness(table) * x[table] for table in possible_tables])</span><br><span class="line"></span><br><span class="line">#specify the maximum number of tables</span><br><span class="line">seating_model += sum([x[table] for table in possible_tables]) &lt;= max_tables, \</span><br><span class="line">                            &quot;Maximum_number_of_tables&quot;</span><br><span class="line"></span><br><span class="line">#A guest must seated at one and only one table</span><br><span class="line">for guest in guests:</span><br><span class="line">    seating_model += sum([x[table] for table in possible_tables</span><br><span class="line">                                if guest in table]) == 1, &quot;Must_seat_%s&quot;%guest</span><br><span class="line"></span><br><span class="line">seating_model.solve()</span><br><span class="line"></span><br><span class="line">print(&quot;The choosen tables are out of a total of %s:&quot;%len(possible_tables))</span><br><span class="line">for table in possible_tables:</span><br><span class="line">    if x[table].value() == 1.0:</span><br><span class="line">        print(table)</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/pulp线性优化3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/03/pulp线性优化3/" itemprop="url">PulP线性优化（三）python编码</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-03T18:23:51+08:00">
+                2018-08-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/03/pulp线性优化3/" class="leancloud_visitors" data-flag-title="PulP线性优化（三）python编码">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><em>本文根据PuLP文档翻译而来，原文请参考</em><br><em><a href="https://pythonhosted.org/PuLP/main/basic_python_coding.html" target="_blank" rel="noopener">https://pythonhosted.org/PuLP/main/basic_python_coding.html</a></em></p>
+<h3 id="基本的Python编码"><a href="#基本的Python编码" class="headerlink" title="基本的Python编码"></a>基本的Python编码</h3><hr>
+<p>在本课程中，您将学习Python中的基本编程，但也可以在Internet上免费获得优秀的Python语言参考资料。您可以下载<a href="http://www.diveintopython.org/" target="_blank" rel="noopener">Dive Into Python</a>这本书， 或者 在Python网站上有许多Python <a href="http://wiki.python.org/moin/BeginnersGuide" target="_blank" rel="noopener">初学者指南</a>。点击以下链接：</p>
+<ul>
+<li><a href="http://wiki.python.org/moin/BeginnersGuide/NonProgrammers" target="_blank" rel="noopener">BeginnersGuide /非程序员</a></li>
+<li><a href="http://wiki.python.org/moin/BeginnersGuide/Programmers" target="_blank" rel="noopener">BeginnersGuide /程序员</a></li>
+</ul>
+<p>取决于您当前的编程知识水平。下面的代码部分假定了基本编程原理的知识，并主要关注特定于Python编程的语法。</p>
+<p>注意：&gt;&gt;&gt;表示Python命令行提示符。</p>
+<h3 id="Python中的循环"><a href="#Python中的循环" class="headerlink" title="Python中的循环"></a>Python中的循环</h3><hr>
+<h4 id="for循环"><a href="#for循环" class="headerlink" title="for循环"></a>for循环</h4><p>一般格式是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">为 变量 在 序列：</span><br><span class="line">    #some命令</span><br><span class="line">#other for循环之后的命令</span><br></pre></td></tr></table></figure></p>
+<p>请注意，格式（缩进和新行）控制for循环的结束，而循环的开头是冒号：。</p>
+<p>观察下面的循环，这类似于您将在课程中使用的循环。变量i通过字符串列表依次变为每个字符串。顶部是.py文件中的代码，底部显示输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">＃以下代码演示了一个列表，其中包含字符串</span><br><span class="line">ingredientslist  =  [ “Rice” ，“Water” ，“Jelly” ] </span><br><span class="line">for  i  in  ingredientslist ：</span><br><span class="line">    print  i </span><br><span class="line">print  “不再在循环中”</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Rice</span><br><span class="line">Water</span><br><span class="line">Jelly</span><br><span class="line">No longer in the loop</span><br></pre></td></tr></table></figure></p>
+<h4 id="while循环"><a href="#while循环" class="headerlink" title="while循环"></a>while循环</h4><p>这些类似于for循环，除了它们继续循环，直到指定的条件不再为真。没有告诉while循环通过任何特定的序列。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">i = 3</span><br><span class="line">while i &lt;= 15:</span><br><span class="line">    # some commands</span><br><span class="line">    i = i + 1 # a command that will eventually end the loop is naturally</span><br><span class="line">    required</span><br><span class="line"># other commands after while loop</span><br></pre></td></tr></table></figure></p>
+<p>对于这个特定的简单while循环，最好做一个for循环，但它演示了语法。如果循环之前的迭代次数需要结束，while循环是有用的，是未知的。</p>
+<h4 id="if语句"><a href="#if语句" class="headerlink" title="if语句"></a>if语句</h4><p>这与上面的循环非常相似。键标识符是冒号：启动语句和缩进结束以结束它。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if j in testlist:</span><br><span class="line">    # some commands</span><br><span class="line">elif j == 5:</span><br><span class="line">    # some commands</span><br><span class="line">else:</span><br><span class="line">    # some commands</span><br></pre></td></tr></table></figure>
+<p>这里显示“elif”（else if）和“else”也可以在if语句之后使用。事实上，“else”可以在两个循环之后以相同的方式使用。</p>
+<h3 id="python中的数组类型"><a href="#python中的数组类型" class="headerlink" title="python中的数组类型"></a>python中的数组类型</h3><hr>
+<h4 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h4><p>列表只是一组变量组合在一起。范围函数通常用于创建整数列表，具有范围的一般格式（开始，停止，步骤）。start的默认值为0，步骤的默认值为1。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; range(3,8)</span><br><span class="line">[3,4,5,6,7]</span><br></pre></td></tr></table></figure>
+<p>这是一个列表/序列。除了整数之外，列表中还可以包含字符串或整数，浮点数和字符串。它们可以通过循环（如下一节所示）或通过显式创建（如下所示）创建。请注意，print语句将向用户显示字符串/变量/ list / ….<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; a = [5,8,&quot;pt&quot;]</span><br><span class="line">&gt;&gt;&gt; print a</span><br><span class="line">[5,8,&apos;pt&apos;]</span><br><span class="line">&gt;&gt;&gt; print a[0]</span><br><span class="line">5</span><br></pre></td></tr></table></figure></p>
+<h4 id="元组"><a href="#元组" class="headerlink" title="元组"></a>元组</h4><p>元组与列表基本相同，但重要的区别在于它们一旦创建就无法修改。它们由以下人员分配：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>X  =  （4 ，1 ，8 ，“字符串” ，[ 1 ，0 ]，（“J” ，4 ，“○” ），14 ）<br>元组可以在其中包含任何类型的数字，字符串，列表，其他元组，函数和对象。另请注意，元组中的第一个元素编号为元素“零”。访问此数据的方法是：</p>
+<p>x [ 0 ]<br>4<br>x [ 3 ]<br>“string”</p>
+<h4 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h4><p>字典是每个具有关联数据的引用键列表，其中该顺序根本不影响字典的操作。对于字典，键不是连续的整数（与列表不同），而是可以是整数，浮点数或字符串。这将变得清晰：</p>
+<p>x  =  {}  ＃创建一个新的空字典 - 注意表示创建字典的大括号<br>x [ 4 ]  =  “编程”  ＃字符串“programming”被添加到字典x中，“ 4“因为它是参考<br>x [ ”游戏“ ]  =  12<br>打印 x [ ”游戏“ ]<br>12<br>在字典中，引用键和存储的值可以是任何类型的输入。新词典元素在创建时添加（使用列表，您无法访问或写入列表中超出最初定义的列表维度的位置）。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>成本 =  { “鸡肉” ： 1.3 ， “牛肉” ： 0.8 ， “羊肉” ： 12 }<br>打印 “肉类的成本”<br>为 我 在 成本：<br>    打印 我<br>    打印 成本[ 我]<br>成本[ “LAMB” ]  =  5<br>打印 “更新肉类成本“<br>对于 我 的 成本：<br>    打印 我的<br>    打印 成本[ i ]<br>给</p>
+<p>成本 的 肉类<br>鸡肉<br>1.3<br>羊肉<br>12和<br>牛肉<br>0.8<br>更新 成本 的 肉类<br>LAMB<br>5<br>鸡<br>1.3<br>羊肉<br>12<br>牛肉<br>0.8<br>在上面的示例中，使用大括号和冒号创建字典以表示将数据分配给字典键。变量i依次分配给每个键（与列表中的变量相同）</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>用于 我 在 范围（1 ，10 ）<br>）。然后使用此键调用字典，并返回存储在该键名下的数据。使用词典的这些类型的for循环与使用PuLP在本课程中对LP进行建模高度相关。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h3 id="List-Tuple-Dictionary语法"><a href="#List-Tuple-Dictionary语法" class="headerlink" title="List / Tuple / Dictionary语法"></a>List / Tuple / Dictionary语法</h3><p>注意创建一个：</p>
+<p>列表用方括号[];<br>元组用圆括号和逗号（，）完成;<br>字典是用括号{}完成的。<br>但是，在创建之后，当访问list / tuple / dictionary中的元素时，操作总是用方括号执行（即a [3]？）。如果a是列表或元组，则返回第四个元素。如果a是字典，它将返回使用引用键3存储的数据。</p>
+<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>Python支持List Comprehensions，这是一种快速而简洁的方法，可以在不使用多行的情况下创建列表。在简单的情况下，它们很容易理解，并且您将在本课程的代码中使用它们。</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>a  =  [ i  for  i  in  range （5 ）]<br>a<br>[0,1,2,3,4]<br>上面的语句将创建列表[0,1,2,3,4]并将其分配给变量“a”。</p>
+<p>赔率 =  [ i  for  i  in  range （25 ） if  i ％2 == 1 ]<br>赔率<br>[1,3,5,7,9,11,13,15,17,19,21,23 ]<br>上面的语句使用if语句和模数运算符（％），因此列表中只包含奇数：[1,3,5，…，19,21,23]。（注意：模数运算符从整数除法计算余数。）</p>
+<p>fifths = [i for i in range(25) if i%5==0]<br>fifths<br>[0, 5, 10, 15, 20]<br>This will create a list with every fifth value in it [0,5,10,15,20]. Existing lists can also be used in the creation of new lists below:</p>
+<p>a = [i for i in range(25) if (i in odds and i not in fifths)]<br>Note that this could also have been done in one step from scratch:</p>
+<p>a = [i for i in range(25) if (i%2==1 and i%5==0)]<br>For a challenge you can try creating</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>a list of prime numbers up to 100, and<br>a list of all “perfect” numbers.<br>More List Comprehensions Examples</p>
+<p>Wikipedia: Perfect Numbers.</p>
+<h3 id="Other-important-language-features"><a href="#Other-important-language-features" class="headerlink" title="Other important language features"></a>Other important language features</h3><hr>
+<h4 id="Commenting-in-Python"><a href="#Commenting-in-Python" class="headerlink" title="Commenting in Python"></a>Commenting in Python</h4><p>使用“”“开始并结束评论部分，在文件顶部进行评论。整个代码中的注释是使用行开头的hash＃符号完成的。</p>
+<h4 id="导入语句"><a href="#导入语句" class="headerlink" title="导入语句"></a>导入语句</h4><p>在您打算使用PuLP进行建模的所有Python编码的顶部，您将需要import语句。此语句使您当前正在编写的模块中的另一个模块（程序代码文件）的内容可用，即您将需要调用的pulp.py中定义的函数和值可用。在本课程中，您将使用：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>来自 纸浆 进口 *<br>星号表示您正在从纸浆模块中导入所有名称。现在可以调用在pulp.py中定义的函数，就好像它们是在您自己的模块中定义的那样。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h4 id="functions"><a href="#functions" class="headerlink" title="functions"></a>functions</h4><p>Python中的函数定义如下：（def是define的缩写）</p>
+<p>高清 名（inputparameter1 ， inputparameter2 ， 。 。 。）：</p>
+<pre><code>#function体
+</code></pre><p>对于一个真实的例子，请注意，如果在函数定义中为输入分配了一个值，这是默认值，并且仅在没有传入其他值时才使用。输入参数的顺序（在定义中）不无论如何，只要调用该函数，就会以相应的顺序输入位置参数。如果使用关键字，参数的顺序根本不重要：</p>
+<p>def  string_appender （head = ‘begin’ ， tail = ‘end’ ， end_message = ‘EOL’ ）：<br>    result  =  head  +  tail  +  end_message<br>    返回 结果</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>string_appender （’newbegin’ ， end_message  =  ‘StringOver’ ）<br>newbeginendStringOver<br>在上面的示例中，将打印函数调用的输出。head的默认值是’begin’，但是使用了’newbegin’的输入。使用了’end’尾部的默认值。并使用endmessage的输入值。请注意，必须将end_message指定为关键字参数，因为没有给出tail的值</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h4 id="类"><a href="#类" class="headerlink" title="类"></a>类</h4><p>要演示类在Python中的工作方式，请查看以下类结构。</p>
+<p>类名是Pattern，它包含几个与Pattern类的任何实例（即Pattern）相关的类变量。功能是</p>
+<p><strong>在里面</strong><br>函数，它创建Pattern类的实例，并使用self分配name和lengthsdict的属性。<br><strong>str</strong><br>函数定义了打印类实例时要返回的内容。<br>修剪<br>函数就像任何普通函数一样，除了所有类函数之外，self必须在输入括号中。<br>类 模式：<br>    “”， “<br>    上在SpongeRoll问题的特定图案的信息<br>    ”“”<br>    成本 =  1<br>    trimValue  =  0.04<br>    totalRollLength  =  20<br>    lenOpts  =  [ 5 ， 7 ， 9 ]</p>
+<p>def  <strong>init</strong> （self ，name ，lengths  =  None ）：<br>    self 。name  =  name<br>    self 。lengthsdict  =  字典（拉链（自我。lenOpts ，长度））</p>
+<p>def  <strong>str </strong> （self ）：<br>    返回 自我。名称</p>
+<p>def  trim （self ）：<br>返回 模式。totalRollLength  -  总和（[ INT （我）* 自我。lengthsdict [ 我]  为 我 在 自我。lengthsdict ]）<br>这个类可以用如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; Pattern.cost # The class attributes can be accessed without making an instance of the class</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; a = Pattern(&quot;PatternA&quot;,[1,0,1])</span><br><span class="line">&gt;&gt;&gt; a.cost # a is now an instance of the Pattern class and is associated with Pattern class variables</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; print a # This calls the Pattern.__str__() function</span><br><span class="line">&quot;PatternA&quot;</span><br><span class="line">&gt;&gt;&gt; a.trim() # This calls the Pattern.trim() function. Note that no input is required.</span><br></pre></td></tr></table></figure></p>
+<p>函数定义中的self是隐含的输入</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/pulp线性优化2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/03/pulp线性优化2/" itemprop="url">PulP线性优化（二）优化概念</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-03T16:23:51+08:00">
+                2018-08-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/03/pulp线性优化2/" class="leancloud_visitors" data-flag-title="PulP线性优化（二）优化概念">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><em>本文根据PuLP文档翻译而来，原文请参考</em><br><em><a href="https://pythonhosted.org/PuLP/main/optimisation_concepts.html" target="_blank" rel="noopener">https://pythonhosted.org/PuLP/main/optimisation_concepts.html</a></em></p>
+<h3 id="线性编程"><a href="#线性编程" class="headerlink" title="线性编程"></a>线性编程</h3><hr>
+<p>最简单的数学程序类型是线性程序。要使您的数学程序成为线性程序，您需要满足以下条件：</p>
+<ul>
+<li>决策变量必须是实变量;</li>
+<li>目标必须是线性表达;</li>
+<li>约束必须是线性表达式。</li>
+</ul>
+<p>线性表达式是以下形式的表达式</p>
+<script type="math/tex; mode=display">a_1x_1 + a_2x_2 + a_3x_3 + ... a_nx_n\{<=,=,>=\}b</script><p>其中$a_i$和b是已知的常数$x_i$是变量。求解线性程序的过程称为线性编程。线性编程通过修订的单纯形法（也称为原始单纯形法），双单纯形法或内点法进行。像cplex这样的解算器允许您指定使用哪种方法，但我们在此不再详述。</p>
+<h3 id="整数编程"><a href="#整数编程" class="headerlink" title="整数编程"></a>整数编程</h3><hr>
+<p>整数程序几乎与线性程序相同，但有一个非常重要的例外。整数程序中的某些决策变量可能只需要包含整数值。变量称为整数变量。由于大多数整数程序包含连续变量和整数变量的混合，因此它们通常称为混合整数程序。虽然线性编程的变化很小，但对解决方案过程的影响是巨大的。整数程序可能是非常难以解决的问题，并且目前有许多研究发现解决整数程序的“好”方法。可以使用分支绑定过程来解决整数程序。</p>
+<p>注意对于任何合理大小的MIP，解决方案时间随着整数变量数量的增加呈指数增长。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/pulp线性优化1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/03/pulp线性优化1/" itemprop="url">PulP线性优化（一）优化过程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-03T16:11:51+08:00">
+                2018-08-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/03/pulp线性优化1/" class="leancloud_visitors" data-flag-title="PulP线性优化（一）优化过程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><em>本文根据PuLP文档翻译而来，原文请参考</em><br><em><a href="https://pythonhosted.org/PuLP/main/the_optimisation_process.html#getting-the-problem-description" target="_blank" rel="noopener">https://pythonhosted.org/PuLP/main/the_optimisation_process.html#getting-the-problem-description</a></em></p>
+<h3 id="优化过程"><a href="#优化过程" class="headerlink" title="优化过程"></a>优化过程</h3><hr>
+<p>解决优化问题不是一个线性过程，但过程可分为五个一般步骤：</p>
+<ul>
+<li>获得问题描述 </li>
+<li>制定数学公式</li>
+<li>处理数学公式</li>
+<li>执行一些后优化分析</li>
+<li>介绍解决方案和分析</li>
+</ul>
+<p>但是，在此过程中通常存在“反馈循环”。例如，在制定和解决优化问题之后，您通常需要考虑解决方案的有效性（通常咨询提供问题描述的人员）。如果您的解决方案无效，您可能需要更改或更新您的配方，以包含您对实际问题的新理解。此过程显示在运筹学方法图中。<br><img src="https://pythonhosted.org/PuLP/_images/or_methodology.jpg" alt="这里写图片描述"><br>建模过程从明确定义的模型描述开始，然后使用数学方法来确定数学公式。接下来，建模者将数学公式输入到一些求解器软件中，例如Excel并求解该模型。最后，根据原始模型描述将解决方案转化为决策。</p>
+<p>使用Python为您提供了建模过程的“快捷方式”。通过在Python中制定数学程序，您已经将它放入PuLP可以轻松使用的形式中，建模者可以调用许多求解器，例如CPLEX，COIN，gurobi，因此您无需将数学公式输入到求解器软件中。但是，您通常不会在配方中添加任何“硬”数字，而是使用数据文件“填充”模型，因此会涉及一些创建相应数据文件的工作。使用数据文件的优点是相同的模型可能会被不同的数据集使用多次。</p>
+<h3 id="建模过程"><a href="#建模过程" class="headerlink" title="建模过程"></a>建模过程</h3><hr>
+<p>建模过程是优化过程的“整洁”简化。让我们更详细地考虑优化过程的五个步骤：</p>
+<h3 id="获取问题描述"><a href="#获取问题描述" class="headerlink" title="获取问题描述"></a>获取问题描述</h3><hr>
+<p>此步骤的目的是提出正式，严谨的模型描述。通常，您会启动一个优化项目，其中包含问题和一些数据的抽象描述。通常，您需要花一些时间与提供问题的人（通常称为客户）交谈。通过与客户交谈并考虑可用的数据，您可以获得您习惯的更严格的模型描述。有时并非所有数据都相关，或者您需要询问客户是否可以提供其他数据。有时，可用数据的限制可能会显着改变您的模型描述和后续配方。</p>
+<h3 id="制定数学公式"><a href="#制定数学公式" class="headerlink" title="制定数学公式"></a>制定数学公式</h3><hr>
+<p>在此步骤中，我们从问题描述中确定关键的可量化决策，限制和目标，并在数学模型中捕获它们的依赖。我们可以将制定过程分为4个关键步骤：</p>
+<ul>
+<li>确定特别关注单位的决策变量（例如：我们需要确定每个进程每周运行多少小时）。</li>
+<li>使用决策变量制定目标函数，我们可以构建最小化或最大化目标函数。目标函数通常反映给定决策变量值的总成本或总利润。</li>
+<li>制定约束，要么是合乎逻辑的（例如，我们不能用于负数小时），要么明确指出问题描述。同样，约束以决策变量表示。</li>
+<li>确定目标函数和约束所需的数据。要解决您的数学程序，您需要在目标函数和/或约束中使用一些“硬数”作为变量边界和/或变量系数。</li>
+</ul>
+<h3 id="解决数学程序"><a href="#解决数学程序" class="headerlink" title="解决数学程序"></a>解决数学程序</h3><hr>
+<p>对于相对简单或易于理解的问题，通常可以将数学模型解决为最优性（即，识别出最佳可能的解决方案）。这是使用诸如修订的单纯形法或内点法之类的算法来完成的。然而，使用这些技术解决最优性需要很长时间的许多工业问题，因此使用不保证最优性的启发式方法来解决这些问题。</p>
+<h3 id="进行一些后优化分析"><a href="#进行一些后优化分析" class="headerlink" title="进行一些后优化分析"></a>进行一些后优化分析</h3><hr>
+<p>通常问题描述存在不确定性（无论是提供的数据的准确性，还是将来的数据值）。在这种情况下，我们的解决方案的稳健性可以通过执行后优化分析来检查。这涉及确定最佳解决方案在公式的各种变化下如何变化（例如，给定成本增加或特定机器失效会产生什么影响？）。这种分析对于制定战术或战略决策也很有用（例如，如果我们投资开设另一家工厂，这会对我们的收入产生什么影响？）。</p>
+<p>此步骤（以及下一步）中的另一个重要考虑因素是数学程序解决方案的验证。您应该仔细考虑解决方案的变量值在原始问题描述方面的含义。确保它们对您，更重要的是您的客户有意义（这就是为什么下一步，提出解决方案和分析很重要）。</p>
+<h3 id="介绍解决方案和分析"><a href="#介绍解决方案和分析" class="headerlink" title="介绍解决方案和分析"></a>介绍解决方案和分析</h3><hr>
+<p>优化过程中的关键步骤是解决方案的呈现和任何后优化分析。从数学程序的解决方案转换回简明易懂的摘要与从问题描述到数学公式的转换同样重要。通过优化生成的关键观察和决策必须以易于理解的方式呈现给客户或项目利益相关者。</p>
+<p>您的演示文稿是实施数学计划所产生决策的关键第一步。如果决策及其后果（通常由数学计划约束决定）没有明确而明智地呈现，那么您的最佳决策将永远不会被使用。</p>
+<p>这一步也是您未来建议其他工作的机会。这可能包括：</p>
+<ul>
+<li>定期检查数学公式的有效性;</li>
+<li>进一步分析您的解决方案，为您的客户寻找其他好处;</li>
+<li>寻找未来的优化机会。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/30/python生成EXCEL报表乱码问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/30/python生成EXCEL报表乱码问题/" itemprop="url">python生成EXCEL报表乱码问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-30T11:21:51+08:00">
+                2018-07-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/07/30/python生成EXCEL报表乱码问题/" class="leancloud_visitors" data-flag-title="python生成EXCEL报表乱码问题">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="乱码问题"><a href="#乱码问题" class="headerlink" title="乱码问题"></a>乱码问题</h3><p>从数据库导出数据，整理后使用jaro.jaro_winkler_metric 进行文本距离的计算，计算之前需要使用decode(“utf-8”)方法进行编码转换，但是在结果数据存储成CSV是遇到了乱码问题，使用EXCEL打开就会乱码，以往都是直接使用file.open()方法进行txt文本的输出，不会出现编码问题。</p>
+<p>感觉问题应该在excel端，需要加个header之类的</p>
+<h3 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h3><p>后来在知乎找到了满意的答案。<br>使用csv写入内容，并在头部写入BOM信息 csvfile.write(codecs.BOM_UTF8) 顺利解决问题</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line"># -*- coding: UTF-8 -*-</span><br><span class="line">import csv</span><br><span class="line">import codecs</span><br><span class="line">with open(&apos;test.csv&apos;, &apos;wb&apos;) as csvfile:</span><br><span class="line">    csvfile.write(codecs.BOM_UTF8)    </span><br><span class="line">    spamwriter = csv.writer(csvfile, dialect=&apos;excel&apos;)    spamwriter.writerow([&apos;测试&apos;] * 5 + [&apos;Baked Beans&apos;])    spamwriter.writerow([&apos;Spam&apos;, &apos;Lovely Spam&apos;, &apos;Wonderful Spam&apos;])</span><br></pre></td></tr></table></figure>
+<p>转自<br>作者：Nice2<br>链接：<a href="https://www.zhihu.com/question/34201726/answer/150221584" target="_blank" rel="noopener">https://www.zhihu.com/question/34201726/answer/150221584</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/27/python使用国内源/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/27/python使用国内源/" itemprop="url">pip使用国内源</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-27T11:21:51+08:00">
+                2018-07-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/07/27/python使用国内源/" class="leancloud_visitors" data-flag-title="pip使用国内源">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="安装-Pulp-等包时遇到问题"><a href="#安装-Pulp-等包时遇到问题" class="headerlink" title="安装 Pulp 等包时遇到问题"></a>安装 Pulp 等包时遇到问题</h3><p>在安装一个不是很常用的python库时 遇到了长时间无法下载安装的问题，之前也有配置过国内的pip 源所以在这整理下</p>
+<h3 id="直接修改国内源为默认"><a href="#直接修改国内源为默认" class="headerlink" title="直接修改国内源为默认"></a>直接修改国内源为默认</h3><p>创建或修改配置文件</p>
+<p>linux的文件在~/.pip/pip.conf，</p>
+<p>windows在%HOMEPATH%\pip\pip.ini）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">index-url = http://pypi.douban.com/simple</span><br><span class="line">[install]</span><br><span class="line">trusted-host=pypi.douban.com</span><br></pre></td></tr></table></figure>
+<p>除了豆瓣还有其他的国内源：</p>
+<ul>
+<li>阿里云 <a href="http://mirrors.aliyun.com/pypi/simple/" target="_blank" rel="noopener">http://mirrors.aliyun.com/pypi/simple/</a></li>
+<li>中国科技大学 <a href="https://pypi.mirrors.ustc.edu.cn/simple/" target="_blank" rel="noopener">https://pypi.mirrors.ustc.edu.cn/simple/</a></li>
+<li>豆瓣(douban) <a href="http://pypi.douban.com/simple/" target="_blank" rel="noopener">http://pypi.douban.com/simple/</a></li>
+<li>清华大学 <a href="https://pypi.tuna.tsinghua.edu.cn/simple/" target="_blank" rel="noopener">https://pypi.tuna.tsinghua.edu.cn/simple/</a></li>
+<li>中国科学技术大学 <a href="http://pypi.mirrors.ustc.edu.cn/simple/" target="_blank" rel="noopener">http://pypi.mirrors.ustc.edu.cn/simple/</a></li>
+</ul>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>此外在此mark一下 Pulp， 处理线性规划问题</p>
+<ol>
+<li><a href="https://pythonhosted.org/PuLP/index.html" target="_blank" rel="noopener">文档主页</a></li>
+<li><a href="https://pythonhosted.org/PuLP/CaseStudies/a_blending_problem.html" target="_blank" rel="noopener">案例</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/如何在hexo中支持Mathjax/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -534,7 +1793,8 @@
       
         
           
-            <h3 id="算法简介"><a href="#算法简介" class="headerlink" title="算法简介"></a>算法简介</h3><p>The Jaro–Winkler distance (Winkler, 1990)是计算2个字符串之间相似度的一种算法。它是Jaro distance算法的变种。主要用于record linkage/数据连接（duplicate detection/重复记录）方面的领域，Jaro–Winkler distance最后得分越高说明相似度越大。Jaro–Winkler distance 是适合于串比如名字这样较短的字符之间计算相似度。0分表示没有任何相似度，1分则代表完全匹配。</p>
+            <p>[TOC]</p>
+<h3 id="算法简介"><a href="#算法简介" class="headerlink" title="算法简介"></a>算法简介</h3><p>The Jaro–Winkler distance (Winkler, 1990)是计算2个字符串之间相似度的一种算法。它是Jaro distance算法的变种。主要用于record linkage/数据连接（duplicate detection/重复记录）方面的领域，Jaro–Winkler distance最后得分越高说明相似度越大。Jaro–Winkler distance 是适合于串比如名字这样较短的字符之间计算相似度。0分表示没有任何相似度，1分则代表完全匹配。</p>
 <h3 id="算法定义"><a href="#算法定义" class="headerlink" title="算法定义"></a>算法定义</h3><ol>
 <li>The Jaro distance算法最后得分公式：<script type="math/tex; mode=display">d_j = \frac{1}{3}\left(\frac{m}{|s1|} + \frac{m}{|s2|} + \frac{m-t}{m} \right)</script>其中:   </li>
 </ol>
@@ -804,1384 +2064,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/28/namecard_extra/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/04/28/namecard_extra/" itemprop="url">名片信息拓展系统</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-28T10:14:01+08:00">
-                2017-04-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/IMORA/" itemprop="url" rel="index">
-                    <span itemprop="name">IMORA</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/04/28/namecard_extra/" class="leancloud_visitors" data-flag-title="名片信息拓展系统">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="名片信息拓展系统"><a href="#名片信息拓展系统" class="headerlink" title="名片信息拓展系统"></a>名片信息拓展系统</h2><h3 id="一-业务整体流程"><a href="#一-业务整体流程" class="headerlink" title="一.业务整体流程"></a>一.业务整体流程</h3><p>名片信息拓展系统主要包括两大任务：一.从json格式的数据源提取所需要字段，入dm库供数据挖掘等使用。二.在基础信息上进行拓展，以获得更丰富的数据。</p>
-<p>现用到的json字段有：姓名，手机，公司名，公司电话，职位<br>拓展字段：手机→城市，公司名→行业，公司电话→城市，职位+行业→职能</p>
-<p>1.<strong>数据来源：</strong><br>可能涉及到如下数据表</p>
-<ul>
-<li>名片基本信息，json格式<br>oradt_cloud_test2.contact_card<br>oradt_cloud_test2.contact_card_extend</li>
-<li>手机、座机区号<br>dm_test.province_city_unique_code</li>
-<li>行业职能对照表<br>oradt_cloud_test2.account_basic_category</li>
-</ul>
-<p>2.<strong>整体处理流程</strong><br>本系统的处理流程如下图：<br><img src="http://i4.buimg.com/4851/24a68975106791ab.png" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/step.png</p>
-<ul>
-<li>对应到代码，整体的入口为jobsAssigner，主要用来通过命令行参数实现运行每日任务，还是只计算给定区间的数据任务，将时间区间传给makeResultTables。</li>
-<li>makeResultTables则查询不同数据源，拼合计算所需的数据格式，处理完毕后再拼合入库所需的数据格式，并执行入等库操作。</li>
-<li>其中makeResultTables会调用jsonPreprocess，jsonPreprocess主要任务为接受从makeResultTables所传递的时间区间，取出该区间中json数据的结果，拼合为后续信息拓展流程所需的数据格式。</li>
-</ul>
-<h3 id="二-功能模块说明"><a href="#二-功能模块说明" class="headerlink" title="二.功能模块说明"></a>二.功能模块说明</h3><p>主要功能模块的包结构如下图：<br><img src="http://i1.piimg.com/4851/4d54fb562381507a.jpg" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/pakages.png</p>
-<p>信息拓展的各个模块，结构类似，输入数据格式为pandas.Dataframe，通过prepare()方法转换格式后，传递给transform()方法进行计算。</p>
-<h3 id="三-项目部署"><a href="#三-项目部署" class="headerlink" title="三.项目部署"></a>三.项目部署</h3><ul>
-<li><p>当前每日任务部署于： 101.251.193.28:/home/mqian/3366<br>由crontab每天凌晨3点执行(3388的暂时弃用)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#每天凌晨3点整执行，名片数据解析</span><br><span class="line">#0 3 * * *  /usr/local/bin/python /home/mqian/3388/jobsAssigner.py -d 2&gt;&gt; /home/mqian/3388/log3388</span><br><span class="line">0 3 * * *  /usr/local/bin/python /home/mqian/3366/jobsAssigner.py -d 2&gt;&gt; /home/mqian/3366/log3366</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>git位置<br><a href="http://192.168.30.251:10086/git/mengqian/namecard_info_extra_basic.git" target="_blank" rel="noopener">http://192.168.30.251:10086/git/mengqian/namecard_info_extra_basic.git</a></p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/02/meeting/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/03/02/meeting/" itemprop="url">月报会议模块</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-02T14:31:19+08:00">
-                2017-03-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/IMORA/" itemprop="url" rel="index">
-                    <span itemprop="name">IMORA</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/03/02/meeting/" class="leancloud_visitors" data-flag-title="月报会议模块">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="会议相关月报样板"><a href="#会议相关月报样板" class="headerlink" title="会议相关月报样板"></a>会议相关月报样板</h3><p>您xx月共参加了xx ×x小时的会议，与xx个人进行过会晤，最近较为关注的公司有xx,xx,xx(公司名)<br>(数据取自日程，会晤人取日程参与人，关注公司取参与会议的人次较多的前三名公司；会议仅包括：橙子日程中从橙脉和手机日历获取的日程）</p>
-<h3 id="参加会议时间"><a href="#参加会议时间" class="headerlink" title="参加会议时间"></a>参加会议时间</h3><p>oradt_cloud1520.contact_card_schedule 取会议开始结束时间；<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">select user_id,SUM(meeting_time) as total_schedule_hour from(</span><br><span class="line">select a.id as schedule_id,a.user_id,content,title,</span><br><span class="line">FROM_UNIXTIME(start_time) as start_time,</span><br><span class="line">FROM_UNIXTIME(end_time) as end_time,</span><br><span class="line">(end_time - start_time)/(60*60*24) as day_diff,</span><br><span class="line">case</span><br><span class="line">-- 本月开始结束且一天之内结束</span><br><span class="line">when (end_time - start_time)/(60*60*24) &lt;= 1 and MONTH(FROM_UNIXTIME(start_time)) = 3 and MONTH(FROM_UNIXTIME(end_time))=3 </span><br><span class="line">then round((end_time - start_time)/(60*60)) </span><br><span class="line">-- 本月开始结束且一天之内没有结束</span><br><span class="line">when (end_time - start_time)/(60*60*24) &gt; 1 and MONTH(FROM_UNIXTIME(start_time)) = 3 and MONTH(FROM_UNIXTIME(end_time))=3 </span><br><span class="line">then round((end_time - start_time)/(60*60*24) * 8) </span><br><span class="line">-- 结束时间不是本月，则取月初第一天为结束时间</span><br><span class="line">when (end_time - start_time)/(60*60*24) &gt; 1 and MONTH(FROM_UNIXTIME(start_time)) = 3 and MONTH(FROM_UNIXTIME(end_time))!=3 </span><br><span class="line">then round((UNIX_TIMESTAMP(last_day(curdate())) - start_time)/(60*60*24) * 8) </span><br><span class="line">-- 开始时间不是本月，则取月初第一天为开始时间 </span><br><span class="line">when (end_time - start_time)/(60*60*24) &gt; 1 </span><br><span class="line">and MONTH(FROM_UNIXTIME(start_time)) != 3 and MONTH(FROM_UNIXTIME(start_time)) != 3 and MONTH(FROM_UNIXTIME(end_time))=3 </span><br><span class="line">then round((end_time - UNIX_TIMESTAMP(DATE_ADD(curdate(),interval -day(curdate())+1 day)))/(60*60*24) * 8)</span><br><span class="line">end as meeting_time</span><br><span class="line">from oradt_cloud1520.contact_card_schedule a </span><br><span class="line">right join oradt_cloud1520.contact_card_schedule_map b on a.id = b.schedule_id</span><br><span class="line">left join(</span><br><span class="line">select user_id,uuid</span><br><span class="line">    from oradt_cloud1520.contact_card</span><br><span class="line">    where self=&apos;true&apos; and status = &apos;active&apos;</span><br><span class="line">) as c on c.user_id = a.user_id and c.uuid = b.uuid </span><br><span class="line">WHERE a.start_time &gt;0 and a.end_time &gt; a.start_time </span><br><span class="line">and b.status != 0 and b.uuid != &apos;&apos; and c.uuid is null and a.status = 1</span><br><span class="line">and YEAR(FROM_UNIXTIME(start_time)) = 2017 and YEAR(FROM_UNIXTIME(end_time))=2017</span><br><span class="line">and (MONTH(FROM_UNIXTIME(start_time)) = 3 or MONTH(FROM_UNIXTIME(end_time))=3)</span><br><span class="line">order by user_id,schedule_id</span><br><span class="line">)c GROUP BY user_id;</span><br></pre></td></tr></table></figure></p>
-<h3 id="名片角色总会见人数"><a href="#名片角色总会见人数" class="headerlink" title="名片角色总会见人数"></a>名片角色总会见人数</h3><p>先统计每个人参加了几个会议（会议需要去重）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">select user_id, GROUP_CONCAT(DISTINCT(schedule_id)) as meeting_list from(</span><br><span class="line">select a.user_id, a.id as schedule_id</span><br><span class="line">from oradt_cloud1520.contact_card_schedule a</span><br><span class="line">right join oradt_cloud1520.contact_card_schedule_map b on a.id = b.schedule_id</span><br><span class="line">left join(</span><br><span class="line">select user_id,uuid</span><br><span class="line">    from oradt_cloud1520.contact_card</span><br><span class="line">    where self=&apos;true&apos; and status = &apos;active&apos;</span><br><span class="line">) as c on c.user_id = a.user_id and c.uuid = b.uuid  </span><br><span class="line">WHERE a.start_time &gt;0 and a.end_time &gt; a.start_time </span><br><span class="line">and b.status != 0 and b.uuid != &apos;&apos; and c.uuid is null and a.status = 1</span><br><span class="line">and YEAR(FROM_UNIXTIME(start_time)) = 2017 and YEAR(FROM_UNIXTIME(end_time))=2017</span><br><span class="line">and (MONTH(FROM_UNIXTIME(start_time)) = 3 or MONTH(FROM_UNIXTIME(end_time))= 3)</span><br><span class="line">order by schedule_id,user_id</span><br><span class="line">) a GROUP BY user_id;</span><br></pre></td></tr></table></figure></p>
-<p>然后分别统计每个人的会议时长<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select DISTINCT(count(uuid)) from oradt_cloud1520.contact_card_schedule_map where status != 0 and uuid != &apos;&apos; and</span><br><span class="line">schedule_id in (3260,3890,3895,3915,4249,4252,4254,4255,4280,4822);</span><br></pre></td></tr></table></figure></p>
-<h3 id="关注公司"><a href="#关注公司" class="headerlink" title="关注公司"></a>关注公司</h3><p>oradt_cloud1520.contact_card_schedule_map 取uuid，即参与人；<br>与DM库中公司表关联得到参与人公司,统计公司前三位<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">select user_id, GROUP_CONCAT(companyName ORDER BY com_count desc,last_modified desc) as com_list from(</span><br><span class="line">select user_id,companyName,count(*) as com_count,max(last_modified) as last_modified from(</span><br><span class="line">select d.*,FROM_UNIXTIME(g.last_modified) as last_modified from(</span><br><span class="line">select a.user_id,b.schedule_id,b.uuid,c.companyName</span><br><span class="line">from oradt_cloud1520.contact_card_schedule a </span><br><span class="line">right join oradt_cloud1520.contact_card_schedule_map b on a.id = b.schedule_id</span><br><span class="line">left JOIN(select DISTINCT user_id,card_id,companyName from dm_test.company_info_jsonver) as c on b.uuid = c.card_id</span><br><span class="line">left join(</span><br><span class="line">select user_id,uuid</span><br><span class="line">    from oradt_cloud1520.contact_card</span><br><span class="line">    where self=&apos;true&apos; and status = &apos;active&apos;</span><br><span class="line">) as f on f.user_id = a.user_id and f.uuid = b.uuid</span><br><span class="line">WHERE a.start_time &gt; 0 and a.end_time &gt; a.start_time </span><br><span class="line">and b.status != 0 and b.uuid != &apos;&apos; and f.uuid is null and a.status = 1</span><br><span class="line">and YEAR(FROM_UNIXTIME(start_time)) = 2017 and YEAR(FROM_UNIXTIME(end_time))=2017</span><br><span class="line">and (MONTH(FROM_UNIXTIME(start_time)) = 3 or MONTH(FROM_UNIXTIME(end_time))= 3)</span><br><span class="line">and c.companyName !=&apos;&apos; and c.companyName is NOT null</span><br><span class="line">)d left join oradt_cloud1520.contact_card g on g.uuid = d.uuid) h</span><br><span class="line">GROUP BY user_id,companyName ORDER BY com_count desc,last_modified desc</span><br><span class="line">)e GROUP BY user_id;</span><br></pre></td></tr></table></figure></p>
-<h3 id="相关表结构"><a href="#相关表结构" class="headerlink" title="相关表结构"></a>相关表结构</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `contact_card_schedule` (</span><br><span class="line">  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT &apos;主键&apos;,</span><br><span class="line">  `user_id` char(40) CHARACTER SET utf8 NOT NULL DEFAULT &apos;&apos; COMMENT &apos;创建人user_id&apos;,</span><br><span class="line">  `vcard_id` char(32) CHARACTER SET utf8 DEFAULT &apos;&apos; COMMENT &apos;日程名片id&apos;,</span><br><span class="line">  `content` text NOT NULL COMMENT &apos;日程内容&apos;,</span><br><span class="line">  `title` varchar(100) DEFAULT &apos;&apos; COMMENT &apos;日程标题&apos;,</span><br><span class="line">  `address` varchar(300) DEFAULT &apos;&apos; COMMENT &apos;地址&apos;,</span><br><span class="line">  `start_time` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;日程开始时间&apos;,</span><br><span class="line">  `end_time` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;日程结束时间&apos;,</span><br><span class="line">  `remind_time` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;提醒时间&apos;,</span><br><span class="line">  `cycle` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;提醒周期（例：15分钟为900单位为秒）&apos;,</span><br><span class="line">  `isallday` tinyint(1) NOT NULL DEFAULT &apos;2&apos; COMMENT &apos;是否全天 ：1是  2否 &apos;,</span><br><span class="line">  `flag_time` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;提醒计算字段（为时间戳）&apos;,</span><br><span class="line">  `last_modify` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;最后修改时间&apos;,</span><br><span class="line">  `create_time` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;创建时间&apos;,</span><br><span class="line">  `latitude` decimal(13,8) NOT NULL DEFAULT &apos;0.00000000&apos; COMMENT &apos;坐标&apos;,</span><br><span class="line">  `longitude` decimal(13,8) NOT NULL DEFAULT &apos;0.00000000&apos; COMMENT &apos;坐标&apos;,</span><br><span class="line">  `is_remind` tinyint(1) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;是否提醒&apos;,</span><br><span class="line">  `status` tinyint(1) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;1为添加2为删除&apos;,</span><br><span class="line">  `flight_id` int(20) DEFAULT &apos;0&apos; COMMENT &apos;行程卡id&apos;,</span><br><span class="line">  `schedule_from` tinyint(2) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;日程来源：1.为橙脉2.为手机同步3.短信同步为4.为行程卡5.为还款同步6.航旅卡&apos;,</span><br><span class="line">  `schedule_info` text CHARACTER SET utf8 COMMENT &apos;来源模块信息&apos;,</span><br><span class="line">  `orange_remind` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;橙子专用提醒时间&apos;,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  KEY `user_id` (`user_id`),</span><br><span class="line">  KEY `v_cardid_idx` (`vcard_id`) USING BTREE</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=4771 DEFAULT CHARSET=utf8mb4</span><br><span class="line"></span><br><span class="line">CREATE TABLE `contact_card_schedule_map` (</span><br><span class="line">  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `uuid` char(32) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;邀请人cardid&apos;,</span><br><span class="line">  `schedule_id` bigint(20) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;日程id&apos;,</span><br><span class="line">  `last_modify` int(10) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;最后更新时间&apos;,</span><br><span class="line">  `operation` enum(&apos;delete&apos;,&apos;modify&apos;,&apos;add&apos;) NOT NULL COMMENT &apos;参与人状态&apos;,</span><br><span class="line">  `status` tinyint(1) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;0 不参与 1 未接受 2 已接受 3 完成&apos;,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  KEY `sch_id` (`schedule_id`) USING BTREE,</span><br><span class="line">  KEY `v_uuid_index` (`uuid`) USING BTREE</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=7093 DEFAULT CHARSET=utf8mb4</span><br><span class="line"></span><br><span class="line">CREATE TABLE `orange_meeting_follow` (</span><br><span class="line">  `id` int(10) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `user_id` varchar(42) NOT NULL COMMENT &apos;用户id&apos;,</span><br><span class="line">  `meeting_hour` int(2) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;会议小时数&apos;,</span><br><span class="line">  `meeting_people` int(2) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;面谈人数&apos;,</span><br><span class="line">  `follow_comp` text COMMENT &apos;关注公司列表&apos;,</span><br><span class="line">  `report_month` int(6) NOT NULL COMMENT &apos;月报生成年月,存储格式例：201702&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COMMENT=&apos;用户会议相关及关注公司统计表&apos;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/15/monthlyReport/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/15/monthlyReport/" itemprop="url">月报各统计指标计算方法</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-15T10:14:01+08:00">
-                2017-02-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/IMORA/" itemprop="url" rel="index">
-                    <span itemprop="name">IMORA</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/02/15/monthlyReport/" class="leancloud_visitors" data-flag-title="月报各统计指标计算方法">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="月报各项目计算（初版）"><a href="#月报各项目计算（初版）" class="headerlink" title="月报各项目计算（初版）"></a>月报各项目计算（初版）</h2><h3 id="一-消费记录"><a href="#一-消费记录" class="headerlink" title="一.消费记录"></a>一.消费记录</h3><p>1.<strong>数据来源：月报表</strong></p>
-<pre><font size="2">CREATE TABLE `orange_monthly_report` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(42) NOT NULL COMMENT '用户ID',
-  `content` text NOT NULL COMMENT '月报内容',
-  `created_time` int(10) NOT NULL COMMENT '月报创建时间',
-  `modify_time` int(10) NOT NULL COMMENT '处理时间',
-  `report_month` varchar(6) NOT NULL COMMENT '月报生成年月',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='月报数据表';
-
-
-CREATE TABLE `orange_consume_detail` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `user_id` char(42) NOT NULL COMMENT '用户id',
-  `card_id` char(32) NOT NULL COMMENT '卡片id',
-  `bankcard_id` char(32) NOT NULL COMMENT '银行卡号',
-  `bank_name` varchar(90) NOT NULL COMMENT '银行名',
-  `bill_type` tinyint(1) NOT NULL COMMENT '消费类型：1、手机银行支付，2、支取，3、转账等',
-  `bill` float(10,2) NOT NULL COMMENT '消费金额',
-  `balance` float(10,2) NOT NULL COMMENT '余额',
-  `created_time` int(10) NOT NULL COMMENT '创建时间',
-  `modify_time` int(10) NOT NULL COMMENT '修改时间',
-  `report_month` varchar(6) NOT NULL COMMENT '月报生成年月',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COMMENT='消费详情表';
-</font></pre>
-
-
-<p>2.<strong>消费记录详情SQL</strong></p>
-<p>得到指定月份的用户消费详情<br>提供各卡片当月消费金额</p>
-<pre><font size="2">SELECT user_id, bankcard_id,bill_time,cons_type,bill FROM consume_details
-WHERE  MONTH(bill_time) == "%s" AND user_id = "%s"</font></pre>
-
-<font color="red" size="2">待定：短信去重</font>
-
-
-<h3 id="二-我在旅途"><a href="#二-我在旅途" class="headerlink" title="二.我在旅途"></a>二.我在旅途</h3><p>1.<strong>数据来源：里程卡，酒店卡</strong></p>
-<font color="red" size="2">待定：</font>
-
-<pre><code>2.里程卡中可能无法得到飞行次数数据。
-3.里程数可能无法涵盖所有公司。
-4.酒店卡数据来源？？
-</code></pre><p>5.抵达城市算法，只用手机GPS位置   </p>
-<h3 id="三-人脉动态"><a href="#三-人脉动态" class="headerlink" title="三.人脉动态"></a>三.人脉动态</h3><p>1.新增名片数，新增好友数<br>从数据库中获取新增名片数，新增好友数</p>
-<p>新增好友数计算：contact_card(is_friend,from_uid,created_time)。从该表中按创建时间分组后取好友uid最早的记录，看是否落入统计区间。</p>
-<p>2.被关注人数<br>来自谁看过我的消费结果<br>contact_card_see_me_source(未去重）<br>统计自然月的关注过用户的人数</p>
-<p>3.参加会议时间 </p>
-<p><a href="http://192.168.30.191/example/orange_schedule.txt" target="_blank" rel="noopener">http://192.168.30.191/example/orange_schedule.txt</a><br>日程相关说明</p>
-<pre><code>oradt_cloud1520.contact_card_schedule 取会议开始结束时间；
-</code></pre><p>4.关注公司</p>
-<pre><code>oradt_cloud1520.contact_card_schedule_map 取uuid，即参与人；    
-与DM库中公司表关联得到参与人公司,统计公司前三位。如有参与人公司排名相同的情况，取名片更新时间最新的公司。
-</code></pre><h3 id="四-卡片统计"><a href="#四-卡片统计" class="headerlink" title="四.卡片统计"></a>四.卡片统计</h3><p>日志中获取卡片展示超过5秒的所有卡片，每找到一对展示开始时间超过5秒的记录，认为是一次使用，记入DM库</p>
-<pre><font size="2">CREATE TABLE `card_used_log` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` char(40) DEFAULT '' COMMENT '用户id',
-  `card_id` char(32) DEFAULT '' COMMENT '卡片id',
-  `daily_used_count` int(10) DEFAULT '' COMMENT '卡片当日使用次数',
-  `card_type` char(32) DEFAULT '' COMMENT '卡片类型',
-  `used_time` datetime COMMENT '卡片使用时间',
-  `batch_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='卡片使用次数表'</font></pre>
-
-<p>展示结果为按日别、卡别、用户统计使用次数<br>各类卡使用占比则先分组<br>常用卡列表来自于hive</p>
-<h3 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h3><p>月报json存储格式</p>
-<pre><font size="2">{
-    "consume": {
-        "totle": 58097.86,
-        "bank": [
-            {
-                "bank_name": "招商银行",
-                "card_num": 1234567898765,
-                "amount": 300.23
-            },
-            {
-                "bank_name": "招商银行",
-                "card_num": 9876543212345,
-                "amount": 451.8
-            },
-            {
-                "bank_name": "工商银行",
-                "card_num": 66436743634424,
-                "amount": 670.83
-            },
-            {
-                "bank_name": "建设银行",
-                "card_num": 63762343254654,
-                "amount": 1270.31
-            }
-        ]
-    },
-    "travel": {
-        "flight": 28,
-        "mileage": 10867,
-        "stay": 15,
-        "city": "北京、东京、纽约、斯德哥尔摩"
-    },
-    "connection": {
-        "meeting_hour": 28,
-        "meeting_people": 15,
-        "new_friend": 98,
-        "new_card": 887,
-        "followed": 185,
-        "follow_comp": "苹果、google、三星"
-    },
-    "card": {
-        "category": [
-            {
-                "type": "行程卡",
-                "freq": 90
-            },
-            {
-                "type": "名片",
-                "freq": 50
-            },
-            {
-                "type": "酒店卡",
-                "freq": 50
-            },
-            {
-                "type": "系统卡",
-                "freq": 10
-            },
-            {
-                "type": "other",
-                "freq": 100
-            }
-        ],
-        "recent_use": "33829923329,53829923329,9829923380"
-    }
-}
-
-** 此处的 other是取使用在4次以上，并不在前4位的卡片，非卡片类型的其它卡片
-</font></pre> 
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/14/message_pushing/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/14/message_pushing/" itemprop="url">资讯推送|用户推广|活动管理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-14T02:14:14+08:00">
-                2017-02-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/IMORA/" itemprop="url" rel="index">
-                    <span itemprop="name">IMORA</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/02/14/message_pushing/" class="leancloud_visitors" data-flag-title="资讯推送|用户推广|活动管理">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="整体启动"><a href="#整体启动" class="headerlink" title="整体启动"></a>整体启动</h3><p>main.py</p>
-<p>通过多线程同时进行三个任务 (确保每个环境只有一个进程在运行)<br>nohup python main.py&amp;</p>
-<h4 id="相关配置"><a href="#相关配置" class="headerlink" title="相关配置"></a>相关配置</h4><p>配置写在文件 db.conf中<br>只需要根据运行环境更改数据库的配置名称即可，如：<br>oa = operationActivity.OperationActivity(“database_dev”) // 192<br>oa = operationActivity.OperationActivity(“database_prd”) // 125</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"># !/Users/xieqj/py_env/venv python</span><br><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">import threading</span><br><span class="line">from mg_handling import msgPushing, userPromotion, operationActivity</span><br><span class="line">import util.comm as cm</span><br><span class="line">import time</span><br><span class="line"></span><br><span class="line"># 资讯推送</span><br><span class="line">def msg_pushing():</span><br><span class="line">    while (True):</span><br><span class="line">        mp = msgPushing.MsgPushing()</span><br><span class="line">        msg_contents = mp.scanDBForSending()</span><br><span class="line">        mp.insert_msg2mq(msg_contents)</span><br><span class="line">        mp.mark_msg_as_sent(msg_contents)</span><br><span class="line">        mp.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"># 用户推广</span><br><span class="line">def user_promotion():</span><br><span class="line">    while (True):</span><br><span class="line">        mp = userPromotion.UserPromotion()</span><br><span class="line">        msg_contents = mp.scanDBForSending()</span><br><span class="line">        mp.insert_msg2mq(msg_contents)</span><br><span class="line">        mp.mark_msg_as_sent(msg_contents)</span><br><span class="line">        mp.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"># 活动管理</span><br><span class="line">def operation_activity():</span><br><span class="line">    while (True):</span><br><span class="line">        oa = operationActivity.OperationActivity()</span><br><span class="line">        msg_contents = oa.scanDBForSending()</span><br><span class="line">        oa.insert_msg2mq(msg_contents)</span><br><span class="line">        oa.mark_msg_as_sent(msg_contents)</span><br><span class="line">        oa.close_database()</span><br><span class="line">        time.sleep(8)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 通过多线程同时启动两个步骤</span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    cm.initLog(&quot;pushing.log&quot;, &quot;INFO&quot;)</span><br><span class="line">    threads = []</span><br><span class="line">    t1 = threading.Thread(target=msg_pushing)</span><br><span class="line">    threads.append(t1)</span><br><span class="line">    t2 = threading.Thread(target=user_promotion)</span><br><span class="line">    threads.append(t2)</span><br><span class="line">    t3 = threading.Thread(target=operation_activity)</span><br><span class="line">    threads.append(t3)</span><br><span class="line">    for t in threads:</span><br><span class="line">        t.setDaemon(True)</span><br><span class="line">        t.start()</span><br><span class="line">    t.join()</span><br></pre></td></tr></table></figure>
-<h3 id="资讯推送"><a href="#资讯推送" class="headerlink" title="资讯推送"></a>资讯推送</h3><p>读取表 sns_qa_push_setting 中的资讯，将其按照region，industry，func（职能）推送给对应群组的用户。<br>具体方法就是将表 sns_qa_push_setting 中的 content 1对1的推送给表 account_basic 中对应群组的用户，即插入 message_queue 表。</p>
-<p>需要注意控制推送时间，和在推送后 update 表 sns_qa_push_setting 中 status 字段</p>
-<h4 id="仓库位置"><a href="#仓库位置" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
-<p>{“messagetype”: 230,”params”: { “data”: [{“newsid”: “ EwtNMSASOSvxjerhni98uQyEXnDIp9fS”,”title”: “发布到审核”,”url”: “资讯  URL”, “coverurl”: “https: //oradtdev.s3.cn-north-  1.amazonaws.com.cn/ukIv0BqxtnjRgjuhJcGKO6jze1liPmZE/gm9YtnBtvQ20160921132139.jpg”,”createdtime”: “1474435299” } ]}}</p>
-<h4 id="数据表"><a href="#数据表" class="headerlink" title="数据表"></a>数据表</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `industry_category` (</span><br><span class="line">  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `category_id` char(8) NOT NULL,</span><br><span class="line">  `parent_id` char(8) NOT NULL,</span><br><span class="line">  `name` varchar(128) NOT NULL COMMENT &apos;行业名称&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;国家统计局的两级行业分类标准&apos;</span><br><span class="line"></span><br><span class="line"># 保存从名片的json数据解析出来的数据 name * region</span><br><span class="line">CREATE TABLE `card_info_jsonver` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `card_id` char(32) DEFAULT &apos;&apos; COMMENT &apos;名片id&apos;,</span><br><span class="line">  `user_id` char(40) DEFAULT &apos;&apos; COMMENT &apos;用户id&apos;,</span><br><span class="line">  `side` tinyint(4) DEFAULT &apos;0&apos; COMMENT &apos;名片的正反面，0：正面，1：反面&apos;,</span><br><span class="line">  `name` varchar(128) DEFAULT &apos;&apos; COMMENT &apos;名片上的名字&apos;,</span><br><span class="line">  `mobile` varchar(20) DEFAULT &apos;&apos; COMMENT &apos;手机号&apos;,</span><br><span class="line">  `provinceM` varchar(64) DEFAULT &apos;&apos; COMMENT &apos;手机号解出来的省份&apos;,</span><br><span class="line">  `provinceM_code` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;省份编码&apos;,</span><br><span class="line">  `cityM` varchar(64) DEFAULT &apos;&apos; COMMENT &apos;城市&apos;,</span><br><span class="line">  `cityM_code` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;城市编码&apos;,</span><br><span class="line">  `created_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT &apos;名片创建时间&apos;,</span><br><span class="line">  `updated_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT &apos;名片更新时间&apos;,</span><br><span class="line">  `handle_state` varchar(16) DEFAULT &apos;&apos; COMMENT &apos;处理状态&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=42333 DEFAULT CHARSET=utf8 COMMENT=&apos;保存从名片的json数据解析出来的数据&apos;</span><br><span class="line"></span><br><span class="line"># 从名片json数据解析出来的公司信息 companyName * func</span><br><span class="line">CREATE TABLE `company_info_jsonVer` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `card_id` char(32) DEFAULT NULL COMMENT &apos;名片id&apos;,</span><br><span class="line">  `user_id` char(40) DEFAULT NULL COMMENT &apos;用户id&apos;,</span><br><span class="line">  `companyName` varchar(128) DEFAULT NULL COMMENT &apos;公司名称&apos;,</span><br><span class="line">  `industry` varchar(128) DEFAULT NULL COMMENT &apos;二级行业&apos;,</span><br><span class="line">  `ind_code` char(8) DEFAULT NULL COMMENT &apos;二级行业编码&apos;,</span><br><span class="line">  `title` char(64) DEFAULT NULL COMMENT &apos;职位&apos;,</span><br><span class="line">  `func_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT &apos;职能名称&apos;,</span><br><span class="line">  `func_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT &apos;职能编号&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;从名片json数据解析出来的公司信息&apos;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">消息类型</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">    &quot;messagetype&quot;: 230,</span><br><span class="line">    &quot;params&quot;: &#123;</span><br><span class="line">        &quot;data&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;newsid&quot;: 资讯id,   </span><br><span class="line">                &quot;title&quot;: &quot;资讯标题&quot;,</span><br><span class="line">               &quot;url&quot;: &quot;资讯URL&quot;,</span><br><span class="line">                &quot;coverurl&quot;: &quot;封面URL&quot;,</span><br><span class="line">            &#125;,</span><br><span class="line">            ....</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">注：排序 按照data中数组的顺序</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="用户推广"><a href="#用户推广" class="headerlink" title="用户推广"></a>用户推广</h3><p>基本流程与咨询推送相同</p>
-<h4 id="仓库位置-1"><a href="#仓库位置-1" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
-<p>git@192.168.30.251:effective.git</p>
-<p>userPromotion.py</p>
-<h4 id="推广表"><a href="#推广表" class="headerlink" title="推广表"></a>推广表</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `sys_user_promotion` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `pro_id` char(32) NOT NULL COMMENT &apos;推广ID&apos;,</span><br><span class="line">  `type` tinyint(2) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;推送方式：1：内部 2：邮件 3：短信&apos;,</span><br><span class="line">  `isalluser` tinyint(2) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;1发送注册用户2发送全部用户&apos;,</span><br><span class="line">  `push_time` int(10) NOT NULL COMMENT &apos;设置的推送时间&apos;,</span><br><span class="line">  `region` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;地区（多个,号隔开）&apos;,</span><br><span class="line">  `industry` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;行业（多个,号隔开）&apos;,</span><br><span class="line">  `func` varchar(2000) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;职能（多个,号隔开）&apos;,</span><br><span class="line">  `title` varchar(50) CHARACTER SET utf8mb4 DEFAULT &apos;&apos; COMMENT &apos;标题&apos;,</span><br><span class="line">  `content` text NOT NULL COMMENT &apos;推送的内容&apos;,</span><br><span class="line">  `created_time` int(10) NOT NULL COMMENT &apos;添加时间&apos;,</span><br><span class="line">  `admin_id` char(40) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;设置人&apos;,</span><br><span class="line">  `status` tinyint(2) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;状态 1：未发 2：已发&apos;,</span><br><span class="line">  `isntice` tinyint(2) DEFAULT &apos;0&apos; COMMENT &apos;是否通知&apos;,</span><br><span class="line">  `url` varchar(256) NOT NULL COMMENT &apos;url地址&apos;,</span><br><span class="line">  `json_data` text NOT NULL COMMENT &apos;推送json格式&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8 COMMENT=&apos;运营后台-用户推广表&apos;</span><br><span class="line"></span><br><span class="line">-- 存储type为2，3的用户推广</span><br><span class="line">CREATE TABLE `message_promotion` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `type` tinyint(4) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;类型：1-内部，2-邮件，3-短信&apos;,</span><br><span class="line">  `mobile` varchar(18) DEFAULT &apos;&apos; COMMENT &apos;手机号&apos;,</span><br><span class="line">  `email` varchar(256) DEFAULT &apos;&apos; COMMENT &apos;邮箱&apos;,</span><br><span class="line">  `title` varchar(100) NOT NULL DEFAULT &apos;&apos; COMMENT &apos;标题&apos;,</span><br><span class="line">  `content` text NOT NULL COMMENT &apos;消息内容&apos;,</span><br><span class="line">  `created_time` int(11) DEFAULT NULL COMMENT &apos;创建时间&apos;,</span><br><span class="line">  `modified_time` int(11) DEFAULT NULL COMMENT &apos;修改时间&apos;,</span><br><span class="line">  `status` tinyint(4) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;状态：0-未发送，1-已发送，2-发送失败&apos;,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT=&apos;推广消息表&apos;</span><br><span class="line"> </span><br><span class="line">推广消息类型</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;:231,</span><br><span class="line">  &quot;params&quot;:&#123;</span><br><span class="line">     &quot;id&quot;:&quot;文章id&quot;，</span><br><span class="line">      &quot;title&quot;: &quot;资讯标题&quot;,</span><br><span class="line">      &quot;content&quot;:&quot;内容&quot;，</span><br><span class="line">      &quot;createdtime&quot;: &quot;1345764830&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;: 231,</span><br><span class="line">  &quot;params&quot;: &#123;</span><br><span class="line">    &quot;content&quot;: &quot;hello world！&lt;br/&gt;&quot;,</span><br><span class="line">    &quot;createdtime&quot;: 1483620281,</span><br><span class="line">    &quot;id&quot;: &quot;zlJjJD6gDvjCdoMcibqCWOGrMo7vbB0b&quot;,</span><br><span class="line">    &quot;image&quot;: &quot;&quot;,</span><br><span class="line">    &quot;title&quot;: &quot;推送测试&quot;,</span><br><span class="line">    &quot;type&quot;: &quot;user&quot;,</span><br><span class="line">    &quot;url&quot;: &quot;h5/News/secretary?type=promotion&amp;id=zlJjJD6gDvjCdoMcibqCWOGrMo7vbB0b&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="活动管理"><a href="#活动管理" class="headerlink" title="活动管理"></a>活动管理</h3><h4 id="背景说明"><a href="#背景说明" class="headerlink" title="背景说明"></a>背景说明</h4><p>系统中，内容管理-推送、运营管理-新增推广、运营管理-新增活动页面中，地区、行业、职能选择时，弹窗样式与“内容管理-推送”样式相同，具体请参见原型</p>
-<p>进行推送时，匹配规则如下：<br>a)  行业：第一次使用APP时所选行业+当前默认身份的并集。采用1级行业-2级行业模式划分<br>b)  地区：第一次使用APP时所选手机号+当前默认身份的并集。采用1级地区-2级地区模式划分<br>c)  职能：当前默认身份。采用1级行业-职能（只有1级）模式划分</p>
-<p>当前默认身份cardid需要通过表 account_basic_detail 的 card_id 字段得到</p>
-<h4 id="业务流程"><a href="#业务流程" class="headerlink" title="业务流程"></a>业务流程</h4><h4 id="仓库位置-2"><a href="#仓库位置-2" class="headerlink" title="仓库位置"></a>仓库位置</h4><p>git@192.168.30.251:message_handling.git</p>
-<p>OperationActivity</p>
-<h4 id="活动表结构"><a href="#活动表结构" class="headerlink" title="活动表结构"></a>活动表结构</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `operation_activity` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `activity_id` char(32) CHARACTER SET utf8 NOT NULL COMMENT &apos;活动id&apos;,</span><br><span class="line">  `type` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;类型 1:活动 2:资讯&apos;,</span><br><span class="line">  `isnotify` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;1:不通知 2:通知&apos;,</span><br><span class="line">  `push_state` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;isnotify为2时有效，1:未推送，2:已推送&apos;,</span><br><span class="line">  `region` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;地区（多个,号隔开）&apos;,</span><br><span class="line">  `industry` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;行业（多个,号隔开）&apos;,</span><br><span class="line">  `func` varchar(256) CHARACTER SET utf8 NOT NULL COMMENT &apos;职能（多个,号隔开）&apos;,</span><br><span class="line">  `show_id` varchar(400) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;资讯shwo_id（多个,号隔开）type为2时有效&apos;,</span><br><span class="line">  `image` varchar(256) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;标题图片&apos;,</span><br><span class="line">  `title` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT &apos;活动标题 type为1时使用&apos;,</span><br><span class="line">  `content` text CHARACTER SET utf8 COMMENT &apos;活动标题 type为1时使用&apos;,</span><br><span class="line">  `onlinetime` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;上线时间&apos;,</span><br><span class="line">  `offlinetime` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;下线时间&apos;,</span><br><span class="line">  `user_id` char(40) CHARACTER SET utf8 NOT NULL COMMENT &apos;发布人用户id&apos;,</span><br><span class="line">  `created_time` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;创建时间&apos;,</span><br><span class="line">  `modify_time` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;修改时间&apos;,</span><br><span class="line">  `state` tinyint(4) NOT NULL DEFAULT &apos;1&apos; COMMENT &apos;状态 1:未发布 2:已发布 3:已下线 4:已删除&apos;,</span><br><span class="line">  `click_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;点击量&apos;,</span><br><span class="line">  `share_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;分享量&apos;,</span><br><span class="line">  `share_user_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;分享用户量&apos;,</span><br><span class="line">  `push_count` int(11) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;推送用户量&apos;,</span><br><span class="line">  `url` varchar(256) NOT NULL COMMENT &apos;URL地址&apos;,</span><br><span class="line">  `json_data` text NOT NULL,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  UNIQUE KEY `activity_id` (`activity_id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COMMENT=&apos;运营活动表&apos;</span><br><span class="line"></span><br><span class="line">推送类型</span><br><span class="line">&#123;</span><br><span class="line">  &quot;messagetype&quot;:231,</span><br><span class="line">  &quot;params&quot;:&#123;</span><br><span class="line">      &quot;id&quot;:&quot;文章id&quot;，</span><br><span class="line">      &quot;title&quot;: &quot;标题&quot;,</span><br><span class="line">      &quot;content&quot;:&quot;内容&quot;，</span><br><span class="line">      &quot;createdtime&quot;: &quot;1345764830&quot;,</span><br><span class="line">      &quot;image&quot;:&quot;图片URL&quot;，</span><br><span class="line">      &quot;type&quot;:&quot;活动（activity）或者用户推广（user）&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="带推送消息查询语句"><a href="#带推送消息查询语句" class="headerlink" title="带推送消息查询语句"></a>带推送消息查询语句</h3><h4 id="资讯推送-1"><a href="#资讯推送-1" class="headerlink" title="资讯推送"></a>资讯推送</h4><p>select id,FROM_UNIXTIME(push_time) as push_time,status,region,industry,func,admin_id,content from oradt_cloud_test2.sns_qa_push_setting<br>where <code>status</code> &lt;&gt; 2 and industry != ‘’ and func != ‘’ and region != ‘’<br>and ROUND((UNIX_TIMESTAMP(SYSDATE()) - push_time)/60) &gt;= -2;</p>
-<h4 id="用户推广-1"><a href="#用户推广-1" class="headerlink" title="用户推广"></a>用户推广</h4><p>select id,FROM_UNIXTIME(push_time) as push_time,status,region,industry,func,admin_id,title,json_data from oradt_cloud_test2.sys_user_promotion<br>where <code>status</code> &lt;&gt; 2 and industry != ‘’ and func != ‘’ and region != ‘’<br>and ROUND((UNIX_TIMESTAMP(SYSDATE()) - push_time)/60) &gt;= -2;</p>
-<h4 id="活动推广"><a href="#活动推广" class="headerlink" title="活动推广"></a>活动推广</h4><p>select id,push_state, region, industry, func, title, json_data, user_id from oradt_cloud_test2.operation_activity<br>where push_state &lt;&gt; 2 and industry != ‘’ and func != ‘’ and region != ‘’ and ROUND((UNIX_TIMESTAMP(SYSDATE()) - push_time)/60) &gt;= -2;</p>
-<hr>
-<h3 id="部署情况"><a href="#部署情况" class="headerlink" title="部署情况"></a>部署情况</h3><h4 id="125仿真环境"><a href="#125仿真环境" class="headerlink" title="125仿真环境"></a>125仿真环境</h4><p>部署在IDC 云主机 /home/xieqj/python2.7_scenario/fangzhen</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 */1 * * * python2.7 /home/xieqj/python2.7_scenario/fangzhen/CardDeduplication/CardDeduplication3366.py</span><br></pre></td></tr></table></figure>
-<p>名片去重 60分钟运行一次<br>名片异常 5分钟运行一次<br>人脉更新 60分钟运行一次<br>消息推送 main.py 60分钟一次</p>
-<p>python2.7 运行的是125 3366端口<br>python2.7 message_handling/main.py (消息推送)<br>python2.7 CardDeduplication/CardDeduplication.py<br>python2.7 CardExceptionHandling/CardException.py<br>python2.7 cardUpdateNotification/CardUpdateNote.py</p>
-<p>python 运行的是3388端口<br>python CardDeduplication.py<br>python CardException.py</p>
-<h4 id="AWS"><a href="#AWS" class="headerlink" title="AWS"></a>AWS</h4><p>部署在ec2 54.223.28.119<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 0 */1 * * python2.7 /home/ec2-user/namecard/CardDeduplication/CardDeduplication_aws.py</span><br></pre></td></tr></table></figure></p>
-<p>名片异常 每5分钟运行一次<br>名片去重 每24小时运行一次<br>用户推广 每1分钟运行一次<br>消息推送 每1分钟运行一次</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/10/Hive3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/10/Hive3/" itemprop="url">Hive优化以及数据倾斜问题</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-10T18:00:00+08:00">
-                2017-02-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hive/" itemprop="url" rel="index">
-                    <span itemprop="name">Hive</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/02/10/Hive3/" class="leancloud_visitors" data-flag-title="Hive优化以及数据倾斜问题">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Hive优化以及数据倾斜问题"><a href="#Hive优化以及数据倾斜问题" class="headerlink" title="Hive优化以及数据倾斜问题"></a>Hive优化以及数据倾斜问题</h1><h2 id="HQL优化"><a href="#HQL优化" class="headerlink" title="HQL优化"></a>HQL优化</h2><p>1.调整Join顺序，确保以大表作为驱动表,即大表放在后面</p>
-<p>2.去除查询中不需要的column</p>
-<p>3.Where条件判断等在TableScan阶段就进行过滤</p>
-<p>4.利用Partition信息，只读取符合条件的Partition</p>
-<p>5.Map端join，以大表作驱动，小表载入所有mapper内存中</p>
-<p>6.对于数据分布不均衡的表Group by时，为避免数据集中到少数的reducer上，分成两个map-reduce阶段。第一个阶段先用Distinct列进行shuffle，然后在reduce端部分聚合，减小数据规模，第二个map-reduce阶段再按group-by列聚合。</p>
-<p>7.在map端用hash进行部分聚合，减小reduce端数据处理规模。</p>
-<h2 id="数据倾斜问题"><a href="#数据倾斜问题" class="headerlink" title="数据倾斜问题"></a>数据倾斜问题</h2><p>数据倾斜<br>概念：数据倾斜是指，map /reduce程序执行时，reduce节点大部分执行完毕，但是</p>
-<p>有一个或者几个reduce节点运行很慢，导致整个程序的处理时间很长，这是因为某一</p>
-<p>个key的条数比其他key多很多（有时是百倍或者千倍之多），这条key所在的reduce</p>
-<p>节点所处理的数据量比其他节点就大很多，从而导致某几个节点迟迟运行不完。</p>
-<p>执行操作：</p>
-<p>  1.其中一个表较小，但是key集中，可能会导致分发到一个或几个Reduce上的数据远高于平均值<br>  2.大表与大表关联，但是空值或者0比较多，这些控制都由一个reduce处理，非常慢。<br>  3.group by维度过小，某值的数量过多。处理某值的Reduce非常耗时。<br>  4.count distinct 某特殊值过多，处理此特殊值的Reduce耗时。</p>
-<p>原因：</p>
-<pre><code>1.key分布不均
-2.业务数据本身的特性
-3.建表时考虑不周
-4.某些语句本身就有数据倾斜
-</code></pre><p>解决方案：</p>
-<p>  1.参数调节<br>    hive.map.aggr=true<br>    Map端部分聚合，相当于Combiner(合并器)。<br>    hive.groupby.skewindata=true<br>    有数据倾斜的时候进行负载均衡，当选项设定为 true，生成的查询计划会有两个 MR Job。</p>
-<pre><code>第一个 MR Job 中，Map 的输出结果集合会随机分布到 Reduce 中，每个 Reduce 做部分
-
-聚合操作，并输出结果，这样处理的结果是相同的 Group By Key 有可能被分发到不同的 
-
-Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预处理的数据结果按照 Group By Key 
-
-分布到 Reduce 中（这个过程可以保证相同的 Group By Key 被分布到同一个 Reduce 中），最后完
-
-成最终的聚合操作。
-</code></pre><p>  2.如何join？关于驱动表的选取，选用join key分布最均匀的表做为驱动表。做好列裁剪和filter操作，</p>
-<pre><code>以达到两表做join的时候数据量相对变小的效果。
-</code></pre><p>  3.使用mapjoin让小的维度表先进内存。在map端完成reduce。</p>
-<p>  4.大表join大表时，把空值的key变成一个字符串加上随机数，把倾斜的数据随机分布到不同的reduce上，</p>
-<pre><code>由于null值关联不上，处理后并不影响最终结果。
-</code></pre><p>  5.count distinct时，将值为空的情况单独处理，如果是计算count distinct，可以不用处理，直接过滤，</p>
-<pre><code>在最后结果中加1。如果还有其它计算，需要进行group by，可以先将值为空的记录单独处理，再和其他
-
-结果进行union。
-</code></pre><p>  6.采用sum() group by的方式来替换count(distinct )进行计算。</p>
-<p>  7.在业务逻辑优化效果不大的情况下，有些时候是可以将倾斜的数据单独拿出来处理，最后union回去。</p>
-<p>  8.对于控制产生的倾斜问题，解决方案1：为空的数据不参与关联；方案2：随机（rand()）赋予空值新的key。</p>
-<pre><code>把空值的key变成一个字符串加上随机数，就能把倾斜的数据分到不同的reduce上，解决数据的倾斜问题。
-</code></pre><p>  9.不同数据类型关联产生数据倾斜，默认的Hash操作会按int型的id来分配reduce，这样会导致所有的String</p>
-<pre><code>类型数据分配到同一个reduce。
-</code></pre><p>  10.使用 mapjoin 解决小表(记录数少)关联大表的数据倾斜问题，这个方法使用的频率非常高，但如果小表</p>
-<pre><code> 很大，大到map join会出现bug或异常，这时就需要特别的处理。
-</code></pre>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/10/Hive2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/10/Hive2/" itemprop="url">Hive入门讲解</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-10T18:00:00+08:00">
-                2017-02-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hive/" itemprop="url" rel="index">
-                    <span itemprop="name">Hive</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/02/10/Hive2/" class="leancloud_visitors" data-flag-title="Hive入门讲解">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Hive入门讲解"><a href="#Hive入门讲解" class="headerlink" title="Hive入门讲解"></a>Hive入门讲解</h1><p>Hive定位：ETL（数据仓库）工具</p>
-<p>将数据从来源端经过抽取（extract）、转换（transform）、加载（load）至目的端的工具,如像：kettle    </p>
-<h2 id="DML"><a href="#DML" class="headerlink" title="DML"></a>DML</h2><p><strong>批量插入/批量导入</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOAD DATA [LOCAL] INPATH &apos;filepath&apos; [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]</span><br><span class="line">注：filepath可以是hdfs路径或者是S3路径，如hdfs://namenode:9000/user/hive/project/data1</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.从本地文件导入到表</span><br><span class="line">load data local inpath &apos;test.txt&apos; into table test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2.从hdfs导入到表</span><br><span class="line">load data inpath &apos;/home/test/add.txt&apos; into table test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3.从表查询中导入到表</span><br><span class="line">insert into table test select id, name, tel from test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">4.将查询数据导入到多个表</span><br><span class="line">from source_table</span><br><span class="line">insert into table test select id, name, tel from dest1_table select src.* where src.id &lt; 100</span><br><span class="line">insert into table test select id, name, tel from dest2_table select src.* where src.id &lt; 100</span><br><span class="line">insert into table test select id, name, tel from dest3_table select src.* where src.id &lt; 100;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5.建表时导入</span><br><span class="line">create table test4 as select id, name, tel from test;</span><br></pre></td></tr></table></figure>
-<p><strong>指定分隔符导出数据</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">insert overwrite local directory &apos;/home/hadoop/export_hive&apos; </span><br><span class="line">row format delimited </span><br><span class="line">fields terminated by &apos;\t&apos; </span><br><span class="line">select * from test;</span><br></pre></td></tr></table></figure>
-<p><strong>删除/清空</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.删除table1中不符合条件的数据</span><br><span class="line">insert overwrite table table1 </span><br><span class="line">select * from table1 where XXXX;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2.清空表</span><br><span class="line">insert overwrite table t_table1 </span><br><span class="line">select * from t_table1 where 1=0;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3.截断表（注：不能截断外部表）</span><br><span class="line">truncate table table_name;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">4.删除hdfs对应的表数据达到清空表（表结构依然存在）</span><br><span class="line">hdfs dfs -rmr /user/hive/warehouse/test</span><br><span class="line"></span><br><span class="line">注：1和2本质是覆写表来实现清除数据</span><br></pre></td></tr></table></figure>
-<p><strong>delete 与 update</strong></p>
-<p>在hive中默认不支持事务，因此默认不支持delete与update，如果需要支持必须在hive-site.xml中配置打开</p>
-<h2 id="DDL"><a href="#DDL" class="headerlink" title="DDL"></a>DDL</h2><p>库/表/索引/视图/分区/分桶</p>
-<h4 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h4><p>列出/创建/修改/删除/查看信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.列出所有数据库</span><br><span class="line">show databases;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2.创建数据库</span><br><span class="line">create database test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">3.删除</span><br><span class="line">drop database test;</span><br><span class="line"></span><br><span class="line">处于安全原因，直接drop有数据的数据库会报错，此时需要cascade关键字忽略报错删除</span><br><span class="line">drop database if exists test cascade;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4.查看数据库信息</span><br><span class="line">describe database test;</span><br></pre></td></tr></table></figure>
-<h4 id="表"><a href="#表" class="headerlink" title="表"></a>表</h4><p>列出/创建/修改/删除/查看信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1.列出所有表</span><br><span class="line"></span><br><span class="line">当前数据库的所有表</span><br><span class="line">show tables;</span><br><span class="line"></span><br><span class="line">指定数据库的所有表</span><br><span class="line">show tables in db_name;</span><br><span class="line"></span><br><span class="line">支持正则</span><br><span class="line">show tables &apos;.*s&apos;;</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">2.创建表</span><br><span class="line">create table test</span><br><span class="line">(id int,</span><br><span class="line">a string</span><br><span class="line">)</span><br><span class="line">ROW FORMAT DELIMITED        行分割</span><br><span class="line">FIELDS TERMINATED BY ‘,’    字段分隔符</span><br><span class="line">LINES TERMINATED BY ‘\n’    行分隔符</span><br><span class="line">STORED AS TEXTFILE;         作为文本存储</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">创建基于正则切分行字段的表</span><br><span class="line">add jar ../build/contrib/hive_contrib.jar;</span><br><span class="line"></span><br><span class="line">CREATE TABLE apachelog (</span><br><span class="line">host STRING,</span><br><span class="line">identity STRING,</span><br><span class="line">user STRING,</span><br><span class="line">time STRING,</span><br><span class="line">request STRING,</span><br><span class="line">status STRING,</span><br><span class="line">size STRING,</span><br><span class="line">referer STRING,</span><br><span class="line">agent STRING)</span><br><span class="line">ROW FORMAT SERDE &apos;org.apache.hadoop.hive.contrib.serde2.RegexSerDe&apos;</span><br><span class="line">WITH SERDEPROPERTIES (</span><br><span class="line">&quot;input.regex&quot; = &quot;([^ ]*) ([^ ]*) ([^ ]*) (-|//[[^//]]*//]) ([^ /&quot;]*|/&quot;[^/&quot;]*/&quot;) (-|[0-9]*) (-|[0-9]*)(?: ([^ /&quot;]*|/&quot;[^/&quot;]*/&quot;) ([^ /&quot;]*|/&quot;[^/&quot;]*/&quot;))?&quot;,</span><br><span class="line">&quot;output.format.string&quot; = &quot;%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s&quot;</span><br><span class="line">)</span><br><span class="line">STORED AS TEXTFILE;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">3.修改</span><br><span class="line">加一个新列</span><br><span class="line">ALTER TABLE test ADD COLUMNS (new_col2 INT COMMENT &apos;a comment&apos;);</span><br><span class="line"></span><br><span class="line">改表名</span><br><span class="line">ALTER TABLE old_name RENAME TO new_name;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4.删除</span><br><span class="line">drop table test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">5.查看信息</span><br><span class="line"></span><br><span class="line">显示列信息</span><br><span class="line">desc test;</span><br><span class="line"></span><br><span class="line">显示详细表信息</span><br><span class="line">desc formatted test;</span><br></pre></td></tr></table></figure>
-<h4 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">创建索引</span><br><span class="line">CREATE INDEX index_name   </span><br><span class="line">ON TABLE base_table_name (col_name, ...)  </span><br><span class="line">AS &apos;index.handler.class.name&apos;</span><br><span class="line"></span><br><span class="line">如：DROP INDEX index_name ON table_name  </span><br><span class="line"></span><br><span class="line">重建索引</span><br><span class="line">ALTER INDEX index_name ON table_name [PARTITION (...)] REBUILD  </span><br><span class="line"></span><br><span class="line">如：alter index index1_index_test on index_test rebuild; </span><br><span class="line"></span><br><span class="line">删除索引</span><br><span class="line">DROP INDEX index_name ON table_name  </span><br><span class="line"></span><br><span class="line">列出索引</span><br><span class="line">show index on index_test;</span><br></pre></td></tr></table></figure>
-<h4 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CREATE VIEW [IF NOT EXISTS] view_name [ (column_name [COMMENT column_comment], ...) ][COMMENT view_comment][TBLPROPERTIES (property_name = property_value, ...)] AS SELECT</span><br><span class="line"></span><br><span class="line">注：hive只支持逻辑视图，不支持物化视图</span><br><span class="line">•增加视图</span><br><span class="line">•如果没有提供表名，视图列的名字将由定义的SELECT表达式自动生成</span><br><span class="line">•如果修改基本表的属性，视图中不会体现，无效查询将会失败</span><br><span class="line">•视图是只读的，不能用LOAD/INSERT/ALTER</span><br><span class="line">•删除视图  DROP VIEW view_name</span><br></pre></td></tr></table></figure>
-<h4 id="分区（重点）"><a href="#分区（重点）" class="headerlink" title="分区（重点）"></a>分区（重点）</h4><p>列出/创建/修改/删除</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.列出一个表的所有分区</span><br><span class="line">show  partitions test;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">2.创建分区表</span><br><span class="line">create table test</span><br><span class="line">(id int,</span><br><span class="line">a string,</span><br><span class="line">)</span><br><span class="line">partitioned by (b string,c int) </span><br><span class="line">ROW FORMAT DELIMITED</span><br><span class="line">FIELDS TERMINATED BY ‘,’ </span><br><span class="line">LINES TERMINATED BY ‘\n’ </span><br><span class="line">STORED AS TEXTFILE;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3.对现有表添加分区</span><br><span class="line">ALTER TABLE test ADD IF NOT EXISTS</span><br><span class="line">PARTITION (year = 2017) LOCATION ‘/hiveuser/hive/warehouse/data_zh.db/data_zh/2017.txt’;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4.删除分区</span><br><span class="line">ALTER TABLE test DROP IF EXISTS PARTITION(year =2017);</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5.加载数据到分区表</span><br><span class="line">LOAD DATA INPATH ‘/data/2017.txt’ INTO TABLE test PARTITION(year=2017);</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">6.未分区表数据导入分区表</span><br><span class="line">insert overwrite table part_table partition (YEAR,MONTH) select * from no_part_table;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">7.动态分区指令</span><br><span class="line">set hive.exec.dynamic.partition=true;</span><br><span class="line">set hive.exec.dynamic.partition.mode=nonstrict;</span><br><span class="line">#set hive.enforce.bucketing = true;</span><br><span class="line"></span><br><span class="line">开启动态分区后导入数据时可以省略指定分区的步骤</span><br><span class="line">LOAD DATA INPATH ‘/data/2017.txt’ INTO TABLE test PARTITION(year);</span><br></pre></td></tr></table></figure>
-<h4 id="分桶"><a href="#分桶" class="headerlink" title="分桶"></a>分桶</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE bucketed_user (id INT) name STRING)</span><br><span class="line">CLUSTERED BY (id) INTO 4 BUCKETS;</span><br></pre></td></tr></table></figure>
-<p>对于每一个表（table）或者分区， Hive可以进一步组织成桶，也就是说桶是更为细粒度的数据范围划分。Hive也是 针对某一列进行桶的组织。Hive采用对列值哈希，然后除以桶的个数求余的方式决定该条记录存放在哪个桶当中。</p>
-<p>把表（或者分区）组织成桶（Bucket）有两个理由：</p>
-<p>（1）获得更高的查询处理效率。桶为表加上了额外的结构，Hive 在处理有些查询时能利用这个结构。具体而言，连接两个在（包含连接列的）相同列上划分了桶的表，可以使用 Map 端连接 （Map-side join）高效的实现。比如JOIN操作。对于JOIN操作两个表有一个相同的列，如果对这两个表都进行了桶操作。那么将保存相同列值的桶进行JOIN操作就可以，可以大大较少JOIN的数据量。</p>
-<p>（2）使取样（sampling）更高效。在处理大规模数据集时，在开发和修改查询的阶段，如果能在数据集的一小部分数据上试运行查询，会带来很多方便。</p>
-<h2 id="DQL"><a href="#DQL" class="headerlink" title="DQL"></a>DQL</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">hive中的order by、distribute by、sort by和cluster by</span><br><span class="line"></span><br><span class="line">order by </span><br><span class="line">全局排序，只有一个Reduce任务</span><br><span class="line"></span><br><span class="line">sort by </span><br><span class="line">只做jubu排序</span><br><span class="line"></span><br><span class="line">distribute by </span><br><span class="line">用distribute by 会对指定的字段按照hashCode值对reduce的个数取模，然后将任务分配到对应的reduce中去执行</span><br><span class="line"></span><br><span class="line">cluster by </span><br><span class="line">distribute by 和 sort by 合用就相当于cluster by，但是cluster by 不能指定排序为asc或 desc 的规则，只能是desc倒序排列</span><br><span class="line"></span><br><span class="line">注：distribute by 和 sort by,distribute by 必须在 sort by前面</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">表连接</span><br><span class="line">1.join只支持等值连接</span><br><span class="line"></span><br><span class="line">2.可以 join 多于 2 个表</span><br><span class="line">SELECT a.val, b.val, c.val FROM a JOIN b </span><br><span class="line">    ON (a.key = b.key1) JOIN c ON (c.key = b.key2)</span><br><span class="line">注:如果join中多个表的 join key 是同一个，则 join 会被转化为单个 map/reduce 任务</span><br><span class="line"></span><br><span class="line">3.LEFT，RIGHT和FULL OUTER</span><br><span class="line">SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key)</span><br><span class="line"></span><br><span class="line">如果 d 表中找不到对应 c 表的记录，d 表的所有列都会列出 NULL，包括 ds 列。也就是说，join 会过滤 d 表中不能找到匹配 c 表 join key 的所有记录。这样的话，LEFT OUTER 就使得查询结果与 WHERE 子句无关</span><br><span class="line"></span><br><span class="line">•解决办法</span><br><span class="line">　　SELECT c.val, d.val FROM c LEFT OUTER JOIN d </span><br><span class="line">     ON (c.key=d.key AND d.ds=&apos;2009-07-07&apos; AND c.ds=&apos;2009-07-07&apos;)</span><br><span class="line">     </span><br><span class="line">4.LEFT SEMI JOIN</span><br><span class="line">LEFT SEMI JOIN 的限制是， JOIN 子句中右边的表只能在 ON 子句中设置过滤条件，在 WHERE 子句、SELECT 子句或其他地方过滤都不行</span><br><span class="line"></span><br><span class="line">SELECT a.key, a.value </span><br><span class="line">  FROM a </span><br><span class="line">  WHERE a.key in </span><br><span class="line">   (SELECT b.key </span><br><span class="line">    FROM B);</span><br><span class="line"></span><br><span class="line">可以被重写为：</span><br><span class="line"></span><br><span class="line">SELECT a.key, a.val </span><br><span class="line">   FROM a LEFT SEMI JOIN b on (a.key = b.key)</span><br><span class="line">   </span><br><span class="line">5.UNION ALL</span><br><span class="line">用来合并多个select的查询结果，需要保证select中字段须一致</span><br><span class="line">　　select_statement UNION ALL select_statement UNION ALL select_statement ...</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">分析窗口函数</span><br><span class="line">over (partition by * order by d desc)</span><br></pre></td></tr></table></figure>
-<p>例子：<a href="//www.tuicool.com/articles/zuiIVbZ">Hive分析窗口函数(一) SUM,AVG,MIN,MAX</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">其他</span><br><span class="line">1.不支持EXIST ,NOT EXIST</span><br><span class="line"></span><br><span class="line">2.Top N 关键字 为Limit</span><br><span class="line"></span><br><span class="line">3.支持正则筛选字段，如SELECT `(ds|hr)?+.+` FROM test</span><br></pre></td></tr></table></figure></p>
-<h2 id="DCL"><a href="#DCL" class="headerlink" title="DCL"></a>DCL</h2><p>权限</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Grant/revoke语法：</span><br><span class="line">grant/revoke priv_type[column_list] on object_type object to/from principal_type principal_name</span><br><span class="line"></span><br><span class="line">查看grant 定义：</span><br><span class="line">show grant user user_name on table table_name;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">创建/删除角色：</span><br><span class="line">Create/drop Role role_name</span><br><span class="line"></span><br><span class="line">角色分配/回收：</span><br><span class="line">Grant role role_name to user user_name</span><br><span class="line">Revoke role role_name from user user_name</span><br><span class="line"></span><br><span class="line">角色授权：</span><br><span class="line">Grant/revoke priv_type[col_List] on object_type object from/to role role_name</span><br><span class="line"></span><br><span class="line">查看role定义：</span><br><span class="line">show role grant role role_name</span><br><span class="line"></span><br><span class="line">相关hive元信息表：</span><br><span class="line">Db_privs:记录了User/Role在DB上的权限</span><br><span class="line">Tbl_privs:记录了User/Role在table上的权限</span><br><span class="line">Tbl_col_privs：记录了User/Role在table column上的权限</span><br><span class="line">Roles：记录了全部创建的role</span><br><span class="line">Role_map：记录了User与Role的相应关系</span><br></pre></td></tr></table></figure>
-<h2 id="Hive函数"><a href="#Hive函数" class="headerlink" title="Hive函数"></a>Hive函数</h2><p>UDF、UDAF和UDTF</p>
-<p>UDF实现输入一行输出一行行的函数</p>
-<p>UDAF实现输入多行输出一行的函数</p>
-<p>UDTF实现输入一行输出多行的函数</p>
-<p>自定义UDF、UDAF和UDTF</p>
-<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><p>hive2.0函数大全<br><a href="http://www.cnblogs.com/MOBIN/p/5618747.html" target="_blank" rel="noopener">http://www.cnblogs.com/MOBIN/p/5618747.html</a></p>
-<h2 id="Mysql数据导入Hive"><a href="#Mysql数据导入Hive" class="headerlink" title="Mysql数据导入Hive"></a>Mysql数据导入Hive</h2><p>通过sqoop把mysql数据导入到hive(若hive没对应表则自动建表)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/sqoop import --connect jdbc:mysql://172.17.4.1:3306/poi --username lizt  --table poi_amap --hive-import --password 123456</span><br></pre></td></tr></table></figure></p>
-<h2 id="python-客户端"><a href="#python-客户端" class="headerlink" title="python 客户端"></a>python 客户端</h2><p><a href="https://github.com/BradRuderman/pyhs2" target="_blank" rel="noopener">pyhs2</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pyhs2</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/10/Hdfs1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/10/Hdfs1/" itemprop="url">Hdfs的block块</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-10T18:00:00+08:00">
-                2017-02-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hive/" itemprop="url" rel="index">
-                    <span itemprop="name">Hive</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/02/10/Hdfs1/" class="leancloud_visitors" data-flag-title="Hdfs的block块">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Hdfs的block块"><a href="#Hdfs的block块" class="headerlink" title="Hdfs的block块"></a>Hdfs的block块</h1><p><img src="http://img.blog.csdn.net/20160415202744965" alt="image"></p>
-<h1 id="MapReduce-shuffle过程"><a href="#MapReduce-shuffle过程" class="headerlink" title="MapReduce shuffle过程"></a>MapReduce shuffle过程</h1><p><img src="https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&amp;quality=100&amp;size=b4000_4000&amp;sec=1486668014&amp;di=b8a686254db1eaf60531d9d61398ce79&amp;src=http://img2.ph.126.net/ePqGrUilx_R_3YRiPsdzdw==/3130564691076091433.png" alt="image"></p>
-<h1 id="Spark-RDD-shuffle过程"><a href="#Spark-RDD-shuffle过程" class="headerlink" title="Spark RDD shuffle过程"></a>Spark RDD shuffle过程</h1><p><img src="http://jerryshao.me/img/2014-01-04-spark-shuffle/mapreduce-process.jpg" alt="image"></p>
-<h1 id="Spark-RDD"><a href="#Spark-RDD" class="headerlink" title="Spark RDD"></a>Spark RDD</h1><p><img src="http://img.blog.csdn.net/20151208164857435" alt="image"></p>
-<h1 id="Spark-窄依赖-宽依赖"><a href="#Spark-窄依赖-宽依赖" class="headerlink" title="Spark 窄依赖 宽依赖"></a>Spark 窄依赖 宽依赖</h1><p><img src="http://img.blog.csdn.net/20151208163736558" alt="image"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2227,7 +2114,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2238,7 +2125,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -2249,7 +2136,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-count">37</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

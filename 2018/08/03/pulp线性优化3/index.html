@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PULP,线性优化," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文根据PuLP文档翻译而来，原文请参考https://pythonhosted.org/PuLP/main/basic_python_coding.html 基本的Python编码 在本课程中，您将学习Python中的基本编程，但也可以在Internet上免费获得优秀的Python语言参考资料。您可以下载Dive Into Python这本书， 或者 在Python网站上有许多Python 初学">
+<meta name="keywords" content="PULP,线性优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PulP线性优化（三）python编码">
+<meta property="og:url" content="http://yoursite.com/2018/08/03/pulp线性优化3/index.html">
+<meta property="og:site_name" content="Frone&#39;s Blog">
+<meta property="og:description" content="本文根据PuLP文档翻译而来，原文请参考https://pythonhosted.org/PuLP/main/basic_python_coding.html 基本的Python编码 在本课程中，您将学习Python中的基本编程，但也可以在Internet上免费获得优秀的Python语言参考资料。您可以下载Dive Into Python这本书， 或者 在Python网站上有许多Python 初学">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-30T04:20:11.616Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PulP线性优化（三）python编码">
+<meta name="twitter:description" content="本文根据PuLP文档翻译而来，原文请参考https://pythonhosted.org/PuLP/main/basic_python_coding.html 基本的Python编码 在本课程中，您将学习Python中的基本编程，但也可以在Internet上免费获得优秀的Python语言参考资料。您可以下载Dive Into Python这本书， 或者 在Python网站上有许多Python 初学">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/03/pulp线性优化3/"/>
+
+
+
+
+
+  <title>PulP线性优化（三）python编码 | Frone's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Frone's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术小窝</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/pulp线性优化3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PulP线性优化（三）python编码</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-03T18:23:51+08:00">
+                2018-08-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/08/03/pulp线性优化3/" class="leancloud_visitors" data-flag-title="PulP线性优化（三）python编码">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><em>本文根据PuLP文档翻译而来，原文请参考</em><br><em><a href="https://pythonhosted.org/PuLP/main/basic_python_coding.html" target="_blank" rel="noopener">https://pythonhosted.org/PuLP/main/basic_python_coding.html</a></em></p>
+<h3 id="基本的Python编码"><a href="#基本的Python编码" class="headerlink" title="基本的Python编码"></a>基本的Python编码</h3><hr>
+<p>在本课程中，您将学习Python中的基本编程，但也可以在Internet上免费获得优秀的Python语言参考资料。您可以下载<a href="http://www.diveintopython.org/" target="_blank" rel="noopener">Dive Into Python</a>这本书， 或者 在Python网站上有许多Python <a href="http://wiki.python.org/moin/BeginnersGuide" target="_blank" rel="noopener">初学者指南</a>。点击以下链接：</p>
+<ul>
+<li><a href="http://wiki.python.org/moin/BeginnersGuide/NonProgrammers" target="_blank" rel="noopener">BeginnersGuide /非程序员</a></li>
+<li><a href="http://wiki.python.org/moin/BeginnersGuide/Programmers" target="_blank" rel="noopener">BeginnersGuide /程序员</a></li>
+</ul>
+<p>取决于您当前的编程知识水平。下面的代码部分假定了基本编程原理的知识，并主要关注特定于Python编程的语法。</p>
+<p>注意：&gt;&gt;&gt;表示Python命令行提示符。</p>
+<h3 id="Python中的循环"><a href="#Python中的循环" class="headerlink" title="Python中的循环"></a>Python中的循环</h3><hr>
+<h4 id="for循环"><a href="#for循环" class="headerlink" title="for循环"></a>for循环</h4><p>一般格式是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">为 变量 在 序列：</span><br><span class="line">    #some命令</span><br><span class="line">#other for循环之后的命令</span><br></pre></td></tr></table></figure></p>
+<p>请注意，格式（缩进和新行）控制for循环的结束，而循环的开头是冒号：。</p>
+<p>观察下面的循环，这类似于您将在课程中使用的循环。变量i通过字符串列表依次变为每个字符串。顶部是.py文件中的代码，底部显示输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">＃以下代码演示了一个列表，其中包含字符串</span><br><span class="line">ingredientslist  =  [ “Rice” ，“Water” ，“Jelly” ] </span><br><span class="line">for  i  in  ingredientslist ：</span><br><span class="line">    print  i </span><br><span class="line">print  “不再在循环中”</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Rice</span><br><span class="line">Water</span><br><span class="line">Jelly</span><br><span class="line">No longer in the loop</span><br></pre></td></tr></table></figure></p>
+<h4 id="while循环"><a href="#while循环" class="headerlink" title="while循环"></a>while循环</h4><p>这些类似于for循环，除了它们继续循环，直到指定的条件不再为真。没有告诉while循环通过任何特定的序列。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">i = 3</span><br><span class="line">while i &lt;= 15:</span><br><span class="line">    # some commands</span><br><span class="line">    i = i + 1 # a command that will eventually end the loop is naturally</span><br><span class="line">    required</span><br><span class="line"># other commands after while loop</span><br></pre></td></tr></table></figure></p>
+<p>对于这个特定的简单while循环，最好做一个for循环，但它演示了语法。如果循环之前的迭代次数需要结束，while循环是有用的，是未知的。</p>
+<h4 id="if语句"><a href="#if语句" class="headerlink" title="if语句"></a>if语句</h4><p>这与上面的循环非常相似。键标识符是冒号：启动语句和缩进结束以结束它。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if j in testlist:</span><br><span class="line">    # some commands</span><br><span class="line">elif j == 5:</span><br><span class="line">    # some commands</span><br><span class="line">else:</span><br><span class="line">    # some commands</span><br></pre></td></tr></table></figure>
+<p>这里显示“elif”（else if）和“else”也可以在if语句之后使用。事实上，“else”可以在两个循环之后以相同的方式使用。</p>
+<h3 id="python中的数组类型"><a href="#python中的数组类型" class="headerlink" title="python中的数组类型"></a>python中的数组类型</h3><hr>
+<h4 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h4><p>列表只是一组变量组合在一起。范围函数通常用于创建整数列表，具有范围的一般格式（开始，停止，步骤）。start的默认值为0，步骤的默认值为1。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; range(3,8)</span><br><span class="line">[3,4,5,6,7]</span><br></pre></td></tr></table></figure>
+<p>这是一个列表/序列。除了整数之外，列表中还可以包含字符串或整数，浮点数和字符串。它们可以通过循环（如下一节所示）或通过显式创建（如下所示）创建。请注意，print语句将向用户显示字符串/变量/ list / ….<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; a = [5,8,&quot;pt&quot;]</span><br><span class="line">&gt;&gt;&gt; print a</span><br><span class="line">[5,8,&apos;pt&apos;]</span><br><span class="line">&gt;&gt;&gt; print a[0]</span><br><span class="line">5</span><br></pre></td></tr></table></figure></p>
+<h4 id="元组"><a href="#元组" class="headerlink" title="元组"></a>元组</h4><p>元组与列表基本相同，但重要的区别在于它们一旦创建就无法修改。它们由以下人员分配：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>X  =  （4 ，1 ，8 ，“字符串” ，[ 1 ，0 ]，（“J” ，4 ，“○” ），14 ）<br>元组可以在其中包含任何类型的数字，字符串，列表，其他元组，函数和对象。另请注意，元组中的第一个元素编号为元素“零”。访问此数据的方法是：</p>
+<p>x [ 0 ]<br>4<br>x [ 3 ]<br>“string”</p>
+<h4 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h4><p>字典是每个具有关联数据的引用键列表，其中该顺序根本不影响字典的操作。对于字典，键不是连续的整数（与列表不同），而是可以是整数，浮点数或字符串。这将变得清晰：</p>
+<p>x  =  {}  ＃创建一个新的空字典 - 注意表示创建字典的大括号<br>x [ 4 ]  =  “编程”  ＃字符串“programming”被添加到字典x中，“ 4“因为它是参考<br>x [ ”游戏“ ]  =  12<br>打印 x [ ”游戏“ ]<br>12<br>在字典中，引用键和存储的值可以是任何类型的输入。新词典元素在创建时添加（使用列表，您无法访问或写入列表中超出最初定义的列表维度的位置）。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>成本 =  { “鸡肉” ： 1.3 ， “牛肉” ： 0.8 ， “羊肉” ： 12 }<br>打印 “肉类的成本”<br>为 我 在 成本：<br>    打印 我<br>    打印 成本[ 我]<br>成本[ “LAMB” ]  =  5<br>打印 “更新肉类成本“<br>对于 我 的 成本：<br>    打印 我的<br>    打印 成本[ i ]<br>给</p>
+<p>成本 的 肉类<br>鸡肉<br>1.3<br>羊肉<br>12和<br>牛肉<br>0.8<br>更新 成本 的 肉类<br>LAMB<br>5<br>鸡<br>1.3<br>羊肉<br>12<br>牛肉<br>0.8<br>在上面的示例中，使用大括号和冒号创建字典以表示将数据分配给字典键。变量i依次分配给每个键（与列表中的变量相同）</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>用于 我 在 范围（1 ，10 ）<br>）。然后使用此键调用字典，并返回存储在该键名下的数据。使用词典的这些类型的for循环与使用PuLP在本课程中对LP进行建模高度相关。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h3 id="List-Tuple-Dictionary语法"><a href="#List-Tuple-Dictionary语法" class="headerlink" title="List / Tuple / Dictionary语法"></a>List / Tuple / Dictionary语法</h3><p>注意创建一个：</p>
+<p>列表用方括号[];<br>元组用圆括号和逗号（，）完成;<br>字典是用括号{}完成的。<br>但是，在创建之后，当访问list / tuple / dictionary中的元素时，操作总是用方括号执行（即a [3]？）。如果a是列表或元组，则返回第四个元素。如果a是字典，它将返回使用引用键3存储的数据。</p>
+<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>Python支持List Comprehensions，这是一种快速而简洁的方法，可以在不使用多行的情况下创建列表。在简单的情况下，它们很容易理解，并且您将在本课程的代码中使用它们。</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>a  =  [ i  for  i  in  range （5 ）]<br>a<br>[0,1,2,3,4]<br>上面的语句将创建列表[0,1,2,3,4]并将其分配给变量“a”。</p>
+<p>赔率 =  [ i  for  i  in  range （25 ） if  i ％2 == 1 ]<br>赔率<br>[1,3,5,7,9,11,13,15,17,19,21,23 ]<br>上面的语句使用if语句和模数运算符（％），因此列表中只包含奇数：[1,3,5，…，19,21,23]。（注意：模数运算符从整数除法计算余数。）</p>
+<p>fifths = [i for i in range(25) if i%5==0]<br>fifths<br>[0, 5, 10, 15, 20]<br>This will create a list with every fifth value in it [0,5,10,15,20]. Existing lists can also be used in the creation of new lists below:</p>
+<p>a = [i for i in range(25) if (i in odds and i not in fifths)]<br>Note that this could also have been done in one step from scratch:</p>
+<p>a = [i for i in range(25) if (i%2==1 and i%5==0)]<br>For a challenge you can try creating</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>a list of prime numbers up to 100, and<br>a list of all “perfect” numbers.<br>More List Comprehensions Examples</p>
+<p>Wikipedia: Perfect Numbers.</p>
+<h3 id="Other-important-language-features"><a href="#Other-important-language-features" class="headerlink" title="Other important language features"></a>Other important language features</h3><hr>
+<h4 id="Commenting-in-Python"><a href="#Commenting-in-Python" class="headerlink" title="Commenting in Python"></a>Commenting in Python</h4><p>使用“”“开始并结束评论部分，在文件顶部进行评论。整个代码中的注释是使用行开头的hash＃符号完成的。</p>
+<h4 id="导入语句"><a href="#导入语句" class="headerlink" title="导入语句"></a>导入语句</h4><p>在您打算使用PuLP进行建模的所有Python编码的顶部，您将需要import语句。此语句使您当前正在编写的模块中的另一个模块（程序代码文件）的内容可用，即您将需要调用的pulp.py中定义的函数和值可用。在本课程中，您将使用：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>来自 纸浆 进口 *<br>星号表示您正在从纸浆模块中导入所有名称。现在可以调用在pulp.py中定义的函数，就好像它们是在您自己的模块中定义的那样。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h4 id="functions"><a href="#functions" class="headerlink" title="functions"></a>functions</h4><p>Python中的函数定义如下：（def是define的缩写）</p>
+<p>高清 名（inputparameter1 ， inputparameter2 ， 。 。 。）：</p>
+<pre><code>#function体
+</code></pre><p>对于一个真实的例子，请注意，如果在函数定义中为输入分配了一个值，这是默认值，并且仅在没有传入其他值时才使用。输入参数的顺序（在定义中）不无论如何，只要调用该函数，就会以相应的顺序输入位置参数。如果使用关键字，参数的顺序根本不重要：</p>
+<p>def  string_appender （head = ‘begin’ ， tail = ‘end’ ， end_message = ‘EOL’ ）：<br>    result  =  head  +  tail  +  end_message<br>    返回 结果</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>string_appender （’newbegin’ ， end_message  =  ‘StringOver’ ）<br>newbeginendStringOver<br>在上面的示例中，将打印函数调用的输出。head的默认值是’begin’，但是使用了’newbegin’的输入。使用了’end’尾部的默认值。并使用endmessage的输入值。请注意，必须将end_message指定为关键字参数，因为没有给出tail的值</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h4 id="类"><a href="#类" class="headerlink" title="类"></a>类</h4><p>要演示类在Python中的工作方式，请查看以下类结构。</p>
+<p>类名是Pattern，它包含几个与Pattern类的任何实例（即Pattern）相关的类变量。功能是</p>
+<p><strong>在里面</strong><br>函数，它创建Pattern类的实例，并使用self分配name和lengthsdict的属性。<br><strong>str</strong><br>函数定义了打印类实例时要返回的内容。<br>修剪<br>函数就像任何普通函数一样，除了所有类函数之外，self必须在输入括号中。<br>类 模式：<br>    “”， “<br>    上在SpongeRoll问题的特定图案的信息<br>    ”“”<br>    成本 =  1<br>    trimValue  =  0.04<br>    totalRollLength  =  20<br>    lenOpts  =  [ 5 ， 7 ， 9 ]</p>
+<p>def  <strong>init</strong> （self ，name ，lengths  =  None ）：<br>    self 。name  =  name<br>    self 。lengthsdict  =  字典（拉链（自我。lenOpts ，长度））</p>
+<p>def  <strong>str </strong> （self ）：<br>    返回 自我。名称</p>
+<p>def  trim （self ）：<br>返回 模式。totalRollLength  -  总和（[ INT （我）* 自我。lengthsdict [ 我]  为 我 在 自我。lengthsdict ]）<br>这个类可以用如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; Pattern.cost # The class attributes can be accessed without making an instance of the class</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; a = Pattern(&quot;PatternA&quot;,[1,0,1])</span><br><span class="line">&gt;&gt;&gt; a.cost # a is now an instance of the Pattern class and is associated with Pattern class variables</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; print a # This calls the Pattern.__str__() function</span><br><span class="line">&quot;PatternA&quot;</span><br><span class="line">&gt;&gt;&gt; a.trim() # This calls the Pattern.trim() function. Note that no input is required.</span><br></pre></td></tr></table></figure></p>
+<p>函数定义中的self是隐含的输入</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpg" alt="Frone Xie wechat" style="width: 200px; max-width: 100%;"/>
+    <div>欢迎关注我的微信公众号！</div>
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PULP/" rel="tag"># PULP</a>
+          
+            <a href="/tags/线性优化/" rel="tag"># 线性优化</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/03/pulp线性优化2/" rel="next" title="PulP线性优化（二）优化概念">
+                <i class="fa fa-chevron-left"></i> PulP线性优化（二）优化概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/06/设置分区问题/" rel="prev" title="集合分区问题">
+                集合分区问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Frone Xie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/frone" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/frone" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-CSDN"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本的Python编码"><span class="nav-number">1.</span> <span class="nav-text">基本的Python编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python中的循环"><span class="nav-number">2.</span> <span class="nav-text">Python中的循环</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#for循环"><span class="nav-number">2.1.</span> <span class="nav-text">for循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#while循环"><span class="nav-number">2.2.</span> <span class="nav-text">while循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#if语句"><span class="nav-number">2.3.</span> <span class="nav-text">if语句</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#python中的数组类型"><span class="nav-number">3.</span> <span class="nav-text">python中的数组类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#列表"><span class="nav-number">3.1.</span> <span class="nav-text">列表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#元组"><span class="nav-number">3.2.</span> <span class="nav-text">元组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字典"><span class="nav-number">3.3.</span> <span class="nav-text">字典</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#List-Tuple-Dictionary语法"><span class="nav-number">4.</span> <span class="nav-text">List / Tuple / Dictionary语法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#列表生成式"><span class="nav-number">5.</span> <span class="nav-text">列表生成式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Other-important-language-features"><span class="nav-number">6.</span> <span class="nav-text">Other important language features</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Commenting-in-Python"><span class="nav-number">6.1.</span> <span class="nav-text">Commenting in Python</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#导入语句"><span class="nav-number">6.2.</span> <span class="nav-text">导入语句</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#functions"><span class="nav-number">6.3.</span> <span class="nav-text">functions</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#类"><span class="nav-number">6.4.</span> <span class="nav-text">类</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frone Xie</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">本站访客数</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人数
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">本站总访问量</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=65946112";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+      <div id="needsharebutton-float">
+        <span class="btn">
+          <i class="fa fa-share-alt" aria-hidden="true"></i>
+        </span>
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("ohqkXUU5txOlX3MjJPCrw7jG-gzGzoHsz", "bPQhLzRSEsTqdIKAGRcHLhyN");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+      flOptions = {};
+      
+          flOptions.iconStyle = "box";
+      
+          flOptions.boxForm = "horizontal";
+      
+          flOptions.position = "middleRight";
+      
+          flOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-float', flOptions);
+    
+  </script>
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/love.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
