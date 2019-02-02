@@ -269,6 +269,190 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/08/alias_tag/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/08/alias_tag/" itemprop="url">名片别名标注</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-08T16:31:19+08:00">
+                2017-05-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IMORA/" itemprop="url" rel="index">
+                    <span itemprop="name">IMORA</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/05/08/alias_tag/" class="leancloud_visitors" data-flag-title="名片别名标注">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="名片别名标注"><a href="#名片别名标注" class="headerlink" title="名片别名标注"></a>名片别名标注</h2><h3 id="一-业务整体流程"><a href="#一-业务整体流程" class="headerlink" title="一.业务整体流程"></a>一.业务整体流程</h3><p>为满足整体橙子语音检索时的需要，为名片现有数据自动添加标签。目前主要包括四部分：</p>
+<ul>
+<li>根据职位头衔为高管级姓名后添加称呼，如总、董等。</li>
+<li>为公司名添加别名，如北京橙鑫数据科技有限公司的别名为橙鑫或IMORA</li>
+<li>从公司名通过切词来提取中心词，为公司名增加标签</li>
+<li>从公司基本信息表获取城市字段，加为标签</li>
+</ul>
+<p>1.<strong>数据来源：</strong><br>可能涉及到如下数据表</p>
+<ul>
+<li>别名信息表<br>oradt_cloud_test2.contact_card_removeword_alias</li>
+<li>公司别名表<br>oradt_cloud_test2.orange_company_alias</li>
+</ul>
+<p>2.<strong>整体处理流程</strong><br>本系统使用到名片基本信息，需要在名片基本信息拓展系统处理之后运行，处理流程如下图：<br><img src="http://wx3.sinaimg.cn/mw690/006nSoSwly1ffe26sy9vpj30l40dc3z3.jpg" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/alias-step.png</p>
+<ul>
+<li>对应到代码，整体的入口为main，主要用来通过时间区间来控制需要计算的数据起始时间。并调用jobContrl中的读取数据、处理数据及序列化的方法，控制程序流程。</li>
+<li>城市标签<br>由于添加城市标签功能为后续添加，没有修改整体处理流程，添加到main中，其他任务结束后，追加更新别名表中的city字段。</li>
+<li>由jobContrl实现数据输入输出格式的转换,业务处理逻辑调用dataPreprocessing实现。</li>
+<li>dataPreprocessing 调用各个功能模块，拼合结果数据。</li>
+</ul>
+<h3 id="二-功能模块说明"><a href="#二-功能模块说明" class="headerlink" title="二.功能模块说明"></a>二.功能模块说明</h3><p>主要功能模块的包结构如下图：<br><img src="http://wx1.sinaimg.cn/mw690/006nSoSwly1ffe1e2slwuj30q50c60vb.jpg" alt=""><br>图片备份位置：/home/samba/share/mengqian/handover/名片信息拓展/alias-classes.png</p>
+<ul>
+<li>公司名关键词提取<br>orgKeyWords</li>
+<li>公司别名<br>companyAlias</li>
+<li>姓氏后缀<br>respectedTitle</li>
+</ul>
+<h3 id="三-项目部署"><a href="#三-项目部署" class="headerlink" title="三.项目部署"></a>三.项目部署</h3><ul>
+<li><p>当前每日任务部署于： 101.251.193.28:/home/mqian/orange_namecard_tagging<br>由crontab每天凌晨4点执行，本系统的需要使用到名片基础信息，需要在名片拓展系统任务完成之后运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">####为企业打别名、人名后加称呼等打标签</span><br><span class="line">0 4 * * * /usr/local/bin/python /home/mqian/orange_namecard_tagging/main.py &gt;&gt;</span><br><span class="line">home/mqian/aliaslog.log</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>git位置<br><a href="http://192.168.30.251:10086/git/mengqian/orange_namecard_tagging.git" target="_blank" rel="noopener">http://192.168.30.251:10086/git/mengqian/orange_namecard_tagging.git</a></p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/28/namecard_extra/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1131,8 +1315,8 @@ WHERE  MONTH(bill_time) == "%s" AND user_id = "%s"</font></pre>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hive/" itemprop="url" rel="index">
-                    <span itemprop="name">Hive</span>
+                  <a href="/categories/spark/" itemprop="url" rel="index">
+                    <span itemprop="name">spark</span>
                   </a>
                 </span>
 
@@ -1918,141 +2102,6 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/27/cardUpdateNotification/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/27/cardUpdateNotification/" itemprop="url">人脉信息更新</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-27T14:07:19+08:00">
-                2016-09-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2016/09/27/cardUpdateNotification/" class="leancloud_visitors" data-flag-title="人脉信息更新">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><excerpt in="" index="" |="" 首页摘要=""><br>“对于当前用户持有的非注册用户的名片，系统根据一定规则检测有新的数据更新时提示用户。”
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/27/cardUpdateNotification/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2103,7 +2152,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-count">26</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2114,7 +2163,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -2125,7 +2174,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-count">39</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -2178,7 +2227,7 @@ Reduce 中，从而达到负载均衡的目的；第二个 MR Job 再根据预�
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
