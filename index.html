@@ -269,6 +269,513 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/12/阿里云ECS安装mysql/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/12/阿里云ECS安装mysql/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-12T13:52:14+08:00">
+                2019-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/12/阿里云ECS安装mysql/" class="leancloud_visitors" data-flag-title="">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lsb_release -a # 查看系统版本</span><br><span class="line"></span><br><span class="line">yum -y update # 更新系统软件</span><br><span class="line"></span><br><span class="line">wget https://dev.mysql.com/get/mysql80-community-release-el7-2.noarch.rpm # 下载rpm包</span><br></pre></td></tr></table></figure>
+<h1 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">rpm -Uvh mysql80-community-release-el7-2.noarch.rpm</span><br><span class="line"></span><br><span class="line">yum repolist all | grep mysql # 查看安装mysql配置文件</span><br><span class="line"></span><br><span class="line">sudo yum install mysql-community-server</span><br></pre></td></tr></table></figure>
+<h1 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">service mysqld start</span><br><span class="line"></span><br><span class="line">service mysqld status</span><br><span class="line"></span><br><span class="line">ps -aux|grep mysql # 查看进程</span><br><span class="line">netstat -anp|grep `pid` # 查看进程对应端口</span><br><span class="line"></span><br><span class="line"># 通过端口查看进程</span><br><span class="line">netstat -nap | grep 端口号</span><br></pre></td></tr></table></figure>
+<p>Mysql服务启动后发生如下事件</p>
+<ol>
+<li><p>mysql server初始化</p>
+</li>
+<li><p>An SSL certificate and key files are generated in the data directory.</p>
+</li>
+<li><p>The <a href="https://dev.mysql.com/doc/refman/8.0/en/validate-password.html" target="_blank" rel="noopener">validate_password plugin</a> is installed and enabled.</p>
+</li>
+<li><p>A superuser account <code>&#39;root&#39;@&#39;localhost&#39;</code> is created. A password for the superuser is set and stored in the error log file. To reveal it, use the following command:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grep 'temporary password' /var/log/mysqld.log</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 可以使用如下方法更新密码</span><br><span class="line"><span class="meta">shell&gt;</span> mysql -uroot -p'*****'</span><br><span class="line"><span class="meta">mysql&gt;</span> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass4!';</span><br><span class="line"><span class="meta">mysql&gt;</span> update user set Host = '%' where user ='root';  # 开启远程登录</span><br><span class="line"><span class="meta">mysql&gt;</span> flush privileges;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="安全相关设置"><a href="#安全相关设置" class="headerlink" title="安全相关设置"></a>安全相关设置</h1><ol>
+<li>在ECS管理页面添加安全组规则</li>
+</ol>
+<p><img src="http://img.alpstudy.com//imgs/20190402183134_HmTblW_Screenshot.jpeg" alt=""></p>
+<ol>
+<li>添加3306 入口规则，无需启用防火墙</li>
+</ol>
+<p><img src="/Users/xingshulin/Library/Application Support/typora-user-images/image-20190402183207794.png" alt="image-20190402183207794"></p>
+<h1 id=""><a href="#" class="headerlink" title=" "></a> </h1><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://blog.csdn.net/panyox/article/details/77780098" target="_blank" rel="noopener">阿里云ECS服务器自建数据库的一些坑</a></li>
+<li><p><a href="https://yq.aliyun.com/articles/285398" target="_blank" rel="noopener">阿里云ECS服务器CentOS7上安装MySql服务</a></p>
+</li>
+<li><p><a href="https://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/" target="_blank" rel="noopener">https://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/</a></p>
+</li>
+<li><a href="https://www.cnblogs.com/chanshuyi/p/mysql_user_mng.html" target="_blank" rel="noopener">用户管理</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/12/阿兹卡班安装介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/12/阿兹卡班安装介绍/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-12T13:52:01+08:00">
+                2019-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/12/阿兹卡班安装介绍/" class="leancloud_visitors" data-flag-title="">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>Azkaban是一种类似于Oozie的工作流控制引擎，可以用来解决多个Hadoop（或Spark等）离线计算任务之间的依赖关系问题。</p>
+<p>也可以用其代替cron来对周期性任务进行调度，并且更为直观，可靠，同时提供了美观的可视化管理界面。</p>
+<p>下文将对azkaban对spark离线任务调度进行简要说明。</p>
+<h2 id="azkaban由三部分构成"><a href="#azkaban由三部分构成" class="headerlink" title="azkaban由三部分构成"></a>azkaban由三部分构成</h2><ul>
+<li>Relational Database(Mysql)</li>
+<li>Azkaban Web Server</li>
+<li>Azkaban Executor Server</li>
+</ul>
+<h3 id="Relational-Database-Mysql"><a href="#Relational-Database-Mysql" class="headerlink" title="Relational Database(Mysql)"></a>Relational Database(Mysql)</h3><p>azkaban将大多数状态信息都存于Mysql中,Azkaban Web Server 和 Azkaban Executor Server也需要访问DB。</p>
+<h3 id="Azkaban-Web-Server"><a href="#Azkaban-Web-Server" class="headerlink" title="Azkaban Web Server"></a>Azkaban Web Server</h3><p>提供了Web UI，是azkaband的主要管理者，包括 project 的管理，认证，调度，对工作流执行过程的监控等。</p>
+<h3 id="Azkaban-Executor-Server"><a href="#Azkaban-Executor-Server" class="headerlink" title="Azkaban Executor Server"></a>Azkaban Executor Server</h3><p>调度工作流和任务，纪录工作流活任务的日志，之所以将AzkabanWebServer和AzkabanExecutorServer分开，主要是因为在某个任务流失败后，可以更方便的将重新执行。而且也更有利于Azkaban系统的升级。</p>
+<h3 id="可调度任务类型"><a href="#可调度任务类型" class="headerlink" title="可调度任务类型"></a>可调度任务类型</h3><ul>
+<li>linux命令</li>
+<li>脚本</li>
+<li>java程序</li>
+<li>hadoop MR</li>
+<li>hive</li>
+</ul>
+<h1 id="创建任务流"><a href="#创建任务流" class="headerlink" title="创建任务流"></a>创建任务流</h1><h2 id="创建任务"><a href="#创建任务" class="headerlink" title="创建任务"></a>创建任务</h2><p>只需要创建一个.job结尾的文本文件，通过dependencies字段指定依赖的上层执行脚本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># foo.job</span><br><span class="line">type=command</span><br><span class="line">command=echo &quot;Hello World&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># bar.job</span><br><span class="line">type=command</span><br><span class="line">dependencies=foo</span><br><span class="line">command=echo bar</span><br></pre></td></tr></table></figure>
+<h2 id="上传任务流"><a href="#上传任务流" class="headerlink" title="上传任务流"></a>上传任务流</h2><p>将所有job文件打包成一个zip文件上传即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zip -q foo.job.zip foo.job</span><br></pre></td></tr></table></figure>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://blog.csdn.net/lsshlsw/article/details/50831239" target="_blank" rel="noopener">使用Azkaban调度Spark任务</a></li>
+<li><a href="http://zeyulee.com/bigdata/2017/09/06/azkaban3-installation-and-configuration/" target="_blank" rel="noopener">Azkaban 3的安装与配置</a></li>
+<li><a href="https://www.jdon.com/workflow/Airflow-vs-Azkaban-vs-Conductor-vs-Oozie-vs-Amazon-Step-Functions.html" target="_blank" rel="noopener">2018工作流引擎比较：Airflow、Azkaban、Conductor、Oozie和 Amazon Step Functions</a></li>
+<li><a href="https://medium.com/@xunnan.xu/workflow-processing-engine-overview-2018-airflow-vs-azkaban-vs-conductor-vs-oozie-vs-amazon-step-90affc54d53b" target="_blank" rel="noopener">英文版</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/12/python3比多线程和多进程还好的新模块 —— 协程Coroutine/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Frone Xie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Frone's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/12/python3比多线程和多进程还好的新模块 —— 协程Coroutine/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-12T13:51:31+08:00">
+                2019-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/12/python3比多线程和多进程还好的新模块 —— 协程Coroutine/" class="leancloud_visitors" data-flag-title="">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h1><p>最近把所有系统的python3 版本都更新到了python3.7，然后更新了一下代码，发现这个版本改动还是很大的，之前更多还是在使用python2.7做ETL或者操作一些API，没想到python的变化如此之大，看来自己还是太落伍了。于是在知乎和官网上找资料学习了下，看到一篇讲协程的文章很受启发，以后应该会较多使用这个功能，之前使用的多进程多线程效果都不明显，而协程应该是一个python的效率利器。</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>多进程和多线程除了创建的开销大之外还有一个难以根治的缺陷，就是处理进程之间或线程之间的协作问题，因为是依赖多进程和多线程的程序在不加锁的情况下通常是不可控的，而协程则可以完美地解决协作问题，由用户来决定协程之间的调度。</p>
+<p>总所周知，Python因为有GIL（全局解释锁）这玩意，不可能有真正的多线程的存在，因此很多情况下都会用multiprocessing实现并发，而且在Python中应用多线程还要注意关键地方的同步，不太方便，用协程代替多线程和多进程是一个很好的选择，因为它吸引人的特性：<em>主动调用/退出，状态保存，避免cpu上下文切换</em>等…</p>
+<h1 id="协程"><a href="#协程" class="headerlink" title="协程"></a>协程</h1><h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>协程，又称作<strong>Coroutine</strong>,通过 async/await 语法进行声明，是编写异步应用的推荐方式。</p>
+<p>从字面上来理解，即协同运行的例程，它是比是线程（thread）更细量级的用户态线程，特点是允许用户的主动调用和主动退出，挂起当前的例程然后返回值或去执行其他任务，接着返回原来停下的点继续执行。等下，这是否有点奇怪？我们都知道一般函数都是线性执行的，不可能说执行到一半返回，等会儿又跑到原来的地方继续执行。但一些熟悉python（or其他动态语言）的童鞋都知道这可以做到，答案是用yield语句。其实这里我们要感谢操作系统（OS）为我们做的工作，因为它具有getcontext和swapcontext这些特性，通过系统调用，我们可以把上下文和状态保存起来，切换到其他的上下文，这些特性为coroutine的实现提供了底层的基础。操作系统的Interrupts和Traps机制则为这种实现提供了可能性，因此它看起来可能是下面这样的:</p>
+<p><img src="http://img.alpstudy.com//imgs/20190411141855_cS0JTt_Screenshot.jpeg" alt=""></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'hello'</span>)</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'world'</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>asyncio.run(main())</span><br><span class="line">hello</span><br><span class="line">world</span><br></pre></td></tr></table></figure>
+<h2 id="理解生成器（generator）"><a href="#理解生成器（generator）" class="headerlink" title="理解生成器（generator）"></a>理解生成器（generator）</h2><p>学过生成器和迭代器的同学应该都知道python有yield这个关键字，yield能把一个函数变成一个generator，与return不同，yield在函数中返回值时会保存函数的状态，使下一次调用函数时会从上一次的状态继续执行，即从yield的下一条语句开始执行，这样做有许多好处，比如我们想要生成一个数列，若该数列的存储空间太大，而我们仅仅需要访问前面几个元素，那么yield就派上用场了，它实现了这种一边循环一边计算的机制，节省了存储空间，提高了运行效率。</p>
+<h2 id="运行协程"><a href="#运行协程" class="headerlink" title="运行协程"></a>运行协程</h2><ol>
+<li><p><a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio.run" target="_blank" rel="noopener"><code>asyncio.run()</code></a> 函数用来运行最高层级的入口点 “main()” 函数</p>
+</li>
+<li><p>等待一个协程。以下代码段会在等待 1 秒后打印 “hello”，然后 <em>再次</em> 等待 2 秒后打印 “world”:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">say_after</span><span class="params">(delay, what)</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(delay)</span><br><span class="line">    print(what)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">f"started at <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> say_after(<span class="number">1</span>, <span class="string">'hello'</span>)</span><br><span class="line">    <span class="keyword">await</span> say_after(<span class="number">2</span>, <span class="string">'world'</span>)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">f"finished at <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<ol>
+<li><p><a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio.create_task" target="_blank" rel="noopener"><code>asyncio.create_task()</code></a> 函数用来<strong>并发</strong>运行作为 asyncio <a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio.Task" target="_blank" rel="noopener"><code>任务</code></a> 的多个协程。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    task1 = asyncio.create_task(</span><br><span class="line">        say_after(<span class="number">1</span>, <span class="string">'hello'</span>))</span><br><span class="line"></span><br><span class="line">    task2 = asyncio.create_task(</span><br><span class="line">        say_after(<span class="number">2</span>, <span class="string">'world'</span>))</span><br><span class="line"></span><br><span class="line">    print(<span class="string">f"started at <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Wait until both tasks are completed (should take</span></span><br><span class="line">    <span class="comment"># around 2 seconds.)</span></span><br><span class="line">    <span class="keyword">await</span> task1</span><br><span class="line">    <span class="keyword">await</span> task2</span><br><span class="line"></span><br><span class="line">    print(<span class="string">f"finished at <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="可等待对象"><a href="#可等待对象" class="headerlink" title="可等待对象"></a>可等待对象</h2><p>如果一个对象可以在 await 语句中使用，那么它就是 可等待 对象。许多 asyncio API 都被设计为接受可等待对象。</p>
+<p>可等待 对象有三种主要类型: <strong>协程, 任务 和 Future</strong>.</p>
+<h3 id="协程-1"><a href="#协程-1" class="headerlink" title="协程"></a>协程</h3><p>Python 协程属于 <em>可等待</em> 对象，因此可以在其他协程中被等待:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">nested</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">42</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># Nothing happens if we just call "nested()".</span></span><br><span class="line">    <span class="comment"># A coroutine object is created but not awaited,</span></span><br><span class="line">    <span class="comment"># so it *won't run at all*.</span></span><br><span class="line">    nested()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Let's do it differently now and await it:</span></span><br><span class="line">    print(<span class="keyword">await</span> nested())  <span class="comment"># will print "42".</span></span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+<p><strong>重要</strong></p>
+<p>在本文档中 “协程” 可用来表示两个紧密关联的概念:</p>
+<ul>
+<li><em>协程函数</em>: 定义形式为 <a href="https://docs.python.org/zh-cn/3/reference/compound_stmts.html#async-def" target="_blank" rel="noopener"><code>async def</code></a> 的函数;</li>
+<li><em>协程对象</em>: 调用 <em>协程函数</em> 所返回的对象。</li>
+</ul>
+<p>asyncio 也支持旧式的 <a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio-generator-based-coro" target="_blank" rel="noopener">基于生成器的</a> 协程。</p>
+<h3 id="任务"><a href="#任务" class="headerlink" title="任务"></a>任务</h3><p><em>任务</em> 被用来设置日程以便 <em>并发</em> 执行协程。</p>
+<p>当一个协程通过 <a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio.create_task" target="_blank" rel="noopener"><code>asyncio.create_task()</code></a> 等函数被打包为一个 <em>任务</em>，该协程将自动排入日程准备立即运行:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">nested</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">42</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># Schedule nested() to run soon concurrently</span></span><br><span class="line">    <span class="comment"># with "main()".</span></span><br><span class="line">    task = asyncio.create_task(nested())</span><br><span class="line"></span><br><span class="line">    <span class="comment"># "task" can now be used to cancel "nested()", or</span></span><br><span class="line">    <span class="comment"># can simply be awaited to wait until it is complete:</span></span><br><span class="line">    <span class="keyword">await</span> task</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+<h3 id="Future-对象"><a href="#Future-对象" class="headerlink" title="Future 对象"></a>Future 对象</h3><p><a href="https://docs.python.org/zh-cn/3/library/asyncio-future.html#asyncio.Future" target="_blank" rel="noopener"><code>Future</code></a> 是一种特殊的 <strong>低层级</strong> 可等待对象，表示一个异步操作的 <strong>最终结果</strong>。</p>
+<p>当一个 Future 对象 <em>被等待</em>，这意味着协程将保持等待直到该 Future 对象在其他地方操作完毕。</p>
+<p>在 asyncio 中需要 Future 对象以便允许通过 async/await 使用基于回调的代码。</p>
+<p>通常情况下 <strong>没有必要</strong> 在应用层级的代码中创建 Future 对象。</p>
+<p>Future 对象有时会由库和某些 asyncio API 暴露给用户，用作可等待对象:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">await</span> function_that_returns_a_future_object()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># this is also valid:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.gather(</span><br><span class="line">        function_that_returns_a_future_object(),</span><br><span class="line">        some_python_coroutine()</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<p>一个很好的返回对象的低层级函数的示例是 <a href="https://docs.python.org/zh-cn/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor" target="_blank" rel="noopener"><code>loop.run_in_executor()</code></a>。</p>
+<h2 id="并发运行任务"><a href="#并发运行任务" class="headerlink" title="并发运行任务"></a>并发运行任务</h2><p><a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio.gather" target="_blank" rel="noopener"><em>awaitable</em> asyncio.gather(<em>*aws</em>, <em>loop=None</em>, <em>return_exceptions=False</em>)</a></p>
+<p><em>并发</em> 运行 <em>aws</em> 序列中的 <a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html#asyncio-awaitables" target="_blank" rel="noopener">可等待对象</a>。</p>
+<p>如果 <em>aws</em> 中的某个可等待对象为协程，它将自动作为一个任务加入日程。</p>
+<p>如果所有可等待对象都成功完成，结果将是一个由所有返回值聚合而成的列表。结果值的顺序与 <em>aws</em> 中可等待对象的顺序一致。</p>
+<p>如果 <em>return_exceptions</em> 为 <code>False</code> (默认)，所引发的首个异常会立即传播给等待 <code>gather()</code> 的任务。<em>aws</em>序列中的其他可等待对象 <strong>不会被取消</strong> 并将继续运行。</p>
+<p>如果 <em>return_exceptions</em> 为 <code>True</code>，异常会和成功的结果一样处理，并聚合至结果列表。</p>
+<p>如果 <code>gather()</code> <em>被取消</em>，所有被提交 (尚未完成) 的可等待对象也会 <em>被取消</em>。</p>
+<p>如果 <em>aws</em> 序列中的任一 Task 或 Future 对象 <em>被取消</em>，它将被当作引发了 <a href="https://docs.python.org/zh-cn/3/library/asyncio-exceptions.html#asyncio.CancelledError" target="_blank" rel="noopener"><code>CancelledError</code></a> 一样处理 — 在此情况下 <code>gather()</code> 调用 <strong>不会</strong> 被取消。这是为了防止一个已提交的 Task/Future 被取消导致其他 Tasks/Future 也被取消。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">factorial</span><span class="params">(name, number)</span>:</span></span><br><span class="line">    f = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>, number + <span class="number">1</span>):</span><br><span class="line">        print(<span class="string">f"Task <span class="subst">&#123;name&#125;</span>: Compute factorial(<span class="subst">&#123;i&#125;</span>)..."</span>)</span><br><span class="line">        <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">        f *= i</span><br><span class="line">    print(<span class="string">f"Task <span class="subst">&#123;name&#125;</span>: factorial(<span class="subst">&#123;number&#125;</span>) = <span class="subst">&#123;f&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># Schedule three calls *concurrently*:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.gather(</span><br><span class="line">        factorial(<span class="string">"A"</span>, <span class="number">2</span>),</span><br><span class="line">        factorial(<span class="string">"B"</span>, <span class="number">3</span>),</span><br><span class="line">        factorial(<span class="string">"C"</span>, <span class="number">4</span>),</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"></span><br><span class="line"><span class="comment"># Expected output:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#     Task A: Compute factorial(2)...</span></span><br><span class="line"><span class="comment">#     Task B: Compute factorial(2)...</span></span><br><span class="line"><span class="comment">#     Task C: Compute factorial(2)...</span></span><br><span class="line"><span class="comment">#     Task A: factorial(2) = 2</span></span><br><span class="line"><span class="comment">#     Task B: Compute factorial(3)...</span></span><br><span class="line"><span class="comment">#     Task C: Compute factorial(3)...</span></span><br><span class="line"><span class="comment">#     Task B: factorial(3) = 6</span></span><br><span class="line"><span class="comment">#     Task C: Compute factorial(4)...</span></span><br><span class="line"><span class="comment">#     Task C: factorial(4) = 24</span></span><br></pre></td></tr></table></figure>
+<h1 id="爬虫例子"><a href="#爬虫例子" class="headerlink" title="爬虫例子"></a>爬虫例子</h1><p>使用爬虫爬取豆瓣top250</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> aiohttp</span><br><span class="line"></span><br><span class="line">url = <span class="string">"https://movie.douban.com/top250"</span></span><br><span class="line">header = &#123;</span><br><span class="line">    <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"</span>,</span><br><span class="line">    <span class="string">"content-type"</span>: <span class="string">"text/plain;charset=UTF-8"</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">fetch_content</span><span class="params">(url)</span>:</span></span><br><span class="line">    <span class="comment"># await asyncio.sleep(1) # 防止请求过快 等待1秒</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> aiohttp.ClientSession(</span><br><span class="line">        headers=header, connector=aiohttp.TCPConnector(ssl=<span class="keyword">False</span>)</span><br><span class="line">    ) <span class="keyword">as</span> session:</span><br><span class="line">        <span class="keyword">async</span> <span class="keyword">with</span> session.get(url) <span class="keyword">as</span> response:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">await</span> response.text()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">parse</span><span class="params">(url)</span>:</span></span><br><span class="line">    page = <span class="keyword">await</span> fetch_content(url)</span><br><span class="line">    html = etree.HTML(page)</span><br><span class="line"></span><br><span class="line">    xpath_movie = <span class="string">'//*[@id="content"]/div/div[1]/ol/li'</span></span><br><span class="line">    xpath_title = <span class="string">'.//span[@class="title"]'</span></span><br><span class="line">    xpath_pages = <span class="string">'//*[@id="content"]/div/div[1]/div[2]/a'</span></span><br><span class="line">    xpath_descs = <span class="string">'.//span[@class="inq"]'</span></span><br><span class="line">    xpath_links = <span class="string">'.//div[@class="info"]/div[@class="hd"]/a'</span></span><br><span class="line"></span><br><span class="line">    pages = html.xpath(xpath_pages)  <span class="comment"># 所有页面的链接都在底部获取</span></span><br><span class="line">    fetch_list = []</span><br><span class="line">    result = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> element_movie <span class="keyword">in</span> html.xpath(xpath_movie):</span><br><span class="line">        result.append(element_movie)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> pages:</span><br><span class="line">        fetch_list.append(url + p.get(<span class="string">"href"</span>))  <span class="comment"># 解析翻页按钮对应的链接 组成完整后边页面链接</span></span><br><span class="line"></span><br><span class="line">    tasks = [fetch_content(url) <span class="keyword">for</span> url <span class="keyword">in</span> fetch_list]  <span class="comment"># 并行处理所有翻页的页面</span></span><br><span class="line">    pages = <span class="keyword">await</span> asyncio.gather(*tasks)</span><br><span class="line">    <span class="comment"># 并发 运行 aws 序列中的 可等待对象。</span></span><br><span class="line">    <span class="comment"># 如果 aws 中的某个可等待对象为协程，它将自动作为一个任务加入日程。</span></span><br><span class="line">    <span class="comment"># 如果所有可等待对象都成功完成，结果将是一个由所有返回值聚合而成的列表。结果值的顺序与 aws 中可等待对象的顺序一致。</span></span><br><span class="line">    <span class="keyword">for</span> page <span class="keyword">in</span> pages:</span><br><span class="line">        html = etree.HTML(page)</span><br><span class="line">        <span class="keyword">for</span> element_movie <span class="keyword">in</span> html.xpath(xpath_movie):</span><br><span class="line">            result.append(element_movie)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i, movie <span class="keyword">in</span> enumerate(result, <span class="number">1</span>):</span><br><span class="line">        title = movie.find(xpath_title).text</span><br><span class="line">        desc = (</span><br><span class="line">            <span class="string">"&lt;"</span> + movie.find(xpath_descs).text + <span class="string">"&gt;"</span></span><br><span class="line">            <span class="keyword">if</span> movie.find(xpath_descs) <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">None</span></span><br><span class="line">        )</span><br><span class="line">        link = movie.find(xpath_links).get(<span class="string">"href"</span>)</span><br><span class="line">        print(i, title, desc, link)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    start = time()</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">        <span class="keyword">await</span> parse(url)</span><br><span class="line">    end = time()</span><br><span class="line">    print(<span class="string">"Cost &#123;&#125; seconds"</span>.format((end - start) / <span class="number">5</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    asyncio.run(main())</span><br></pre></td></tr></table></figure>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ol>
+<li><a href="https://zhuanlan.zhihu.com/p/25228075" target="_blank" rel="noopener">从0到1，Python异步编程的演进之路</a></li>
+<li><a href="https://www.jianshu.com/p/5d38b598d8a6" target="_blank" rel="noopener">Python3 Async/Await解释</a></li>
+<li><a href="https://docs.python.org/zh-cn/3/library/asyncio-task.html" target="_blank" rel="noopener">官方文档 协程与任务</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/02/2018年度总结/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1517,541 +2024,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/27/python使用国内源/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/27/python使用国内源/" itemprop="url">pip使用国内源</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-27T11:21:51+08:00">
-                2018-07-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/算法/" itemprop="url" rel="index">
-                    <span itemprop="name">算法</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2018/07/27/python使用国内源/" class="leancloud_visitors" data-flag-title="pip使用国内源">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="安装-Pulp-等包时遇到问题"><a href="#安装-Pulp-等包时遇到问题" class="headerlink" title="安装 Pulp 等包时遇到问题"></a>安装 Pulp 等包时遇到问题</h3><p>在安装一个不是很常用的python库时 遇到了长时间无法下载安装的问题，之前也有配置过国内的pip 源所以在这整理下</p>
-<h3 id="直接修改国内源为默认"><a href="#直接修改国内源为默认" class="headerlink" title="直接修改国内源为默认"></a>直接修改国内源为默认</h3><p>创建或修改配置文件</p>
-<p>linux的文件在~/.pip/pip.conf，</p>
-<p>windows在%HOMEPATH%\pip\pip.ini）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">index-url = http://pypi.douban.com/simple</span><br><span class="line">[install]</span><br><span class="line">trusted-host=pypi.douban.com</span><br></pre></td></tr></table></figure>
-<p>除了豆瓣还有其他的国内源：</p>
-<ul>
-<li>阿里云 <a href="http://mirrors.aliyun.com/pypi/simple/" target="_blank" rel="noopener">http://mirrors.aliyun.com/pypi/simple/</a></li>
-<li>中国科技大学 <a href="https://pypi.mirrors.ustc.edu.cn/simple/" target="_blank" rel="noopener">https://pypi.mirrors.ustc.edu.cn/simple/</a></li>
-<li>豆瓣(douban) <a href="http://pypi.douban.com/simple/" target="_blank" rel="noopener">http://pypi.douban.com/simple/</a></li>
-<li>清华大学 <a href="https://pypi.tuna.tsinghua.edu.cn/simple/" target="_blank" rel="noopener">https://pypi.tuna.tsinghua.edu.cn/simple/</a></li>
-<li>中国科学技术大学 <a href="http://pypi.mirrors.ustc.edu.cn/simple/" target="_blank" rel="noopener">http://pypi.mirrors.ustc.edu.cn/simple/</a></li>
-</ul>
-<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>此外在此mark一下 Pulp， 处理线性规划问题</p>
-<ol>
-<li><a href="https://pythonhosted.org/PuLP/index.html" target="_blank" rel="noopener">文档主页</a></li>
-<li><a href="https://pythonhosted.org/PuLP/CaseStudies/a_blending_problem.html" target="_blank" rel="noopener">案例</a></li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/如何在hexo中支持Mathjax/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/16/如何在hexo中支持Mathjax/" itemprop="url">如何在hexo中支持Mathjax</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T18:11:51+08:00">
-                2018-07-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hexo/" itemprop="url" rel="index">
-                    <span itemprop="name">Hexo</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2018/07/16/如何在hexo中支持Mathjax/" class="leancloud_visitors" data-flag-title="如何在hexo中支持Mathjax">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="第一步：-使用Kramed代替-Marked"><a href="#第一步：-使用Kramed代替-Marked" class="headerlink" title="第一步： 使用Kramed代替 Marked"></a>第一步： 使用Kramed代替 Marked</h3><p>hexo 默认的渲染引擎是 marked，但是 marked 不支持 mathjax。 kramed 是在 marked 的基础上进行修改。我们在工程目录下执行以下命令来安装 kramed.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm uninstall hexo-renderer-marked --save</span><br><span class="line">npm install hexo-renderer-kramed --save</span><br></pre></td></tr></table></figure></p>
-<p>然后，更改/node_modules/hexo-renderer-kramed/lib/renderer.js，更改<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// Change inline math rule</span><br><span class="line">function formatText(text) &#123;</span><br><span class="line">    // Fit kramed&apos;s rule: $$ + \1 + $$</span><br><span class="line">    return text.replace(/`\$(.*?)\$`/g, &apos;$$$$$1$$$$&apos;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// Change inline math rule</span><br><span class="line">function formatText(text) &#123;</span><br><span class="line">    return text;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="第二步-停止使用-hexo-math"><a href="#第二步-停止使用-hexo-math" class="headerlink" title="第二步: 停止使用 hexo-math"></a>第二步: 停止使用 hexo-math</h3><p>首先，如果你已经安装 hexo-math, 请卸载它,然后安装 hexo-renderer-mathjax 包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm uninstall hexo-math --save</span><br><span class="line">npm install hexo-renderer-mathjax --save</span><br></pre></td></tr></table></figure></p>
-<h3 id="第三步-更改默认转义规则"><a href="#第三步-更改默认转义规则" class="headerlink" title="第三步: 更改默认转义规则"></a>第三步: 更改默认转义规则</h3><p>因为 hexo 默认的转义规则会将一些字符进行转义，比如 _ 转为 <em>, 所以我们需要对默认的规则进行修改.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi node_modules/kramed/lib/rules/nline.js</span><br></pre></td></tr></table></figure></em></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 替换11行</span><br><span class="line">escape: /^\\([\\`*&#123;&#125;\[\]()#$+\-.!_&gt;])/,</span><br><span class="line">//修改为</span><br><span class="line">escape: /^\\([`*\[\]()# +\-.!_&gt;])/,</span><br><span class="line"></span><br><span class="line">//替换20行</span><br><span class="line">em: /^\b_((?:__|[\s\S])+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,</span><br><span class="line">//修改为</span><br><span class="line">em: /^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,</span><br></pre></td></tr></table></figure>
-<h3 id="第四步-开启mathjax"><a href="#第四步-开启mathjax" class="headerlink" title="第四步: 开启mathjax"></a>第四步: 开启mathjax</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi themes/next/_config.yml</span><br></pre></td></tr></table></figure>
-<p>开启 mathjax功能<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mathjax:</span><br><span class="line">  enable: true</span><br><span class="line">  perpage: false</span><br><span class="line">  cdn: //cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML</span><br></pre></td></tr></table></figure></p>
-<p>并在博客中使用mathjax<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: Testing Mathjax with Hexo</span><br><span class="line">category: Uncategorized</span><br><span class="line">date: 2017/05/03</span><br><span class="line">mathjax: true</span><br><span class="line">---</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/jaro-winkler算法原理和应用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Frone Xie">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Frone's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/16/jaro-winkler算法原理和应用/" itemprop="url">Jaro–Winkler算法原理和应用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T16:21:51+08:00">
-                2018-07-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/算法/" itemprop="url" rel="index">
-                    <span itemprop="name">算法</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2018/07/16/jaro-winkler算法原理和应用/" class="leancloud_visitors" data-flag-title="Jaro–Winkler算法原理和应用">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>[TOC]</p>
-<h3 id="算法简介"><a href="#算法简介" class="headerlink" title="算法简介"></a>算法简介</h3><p>The Jaro–Winkler distance (Winkler, 1990)是计算2个字符串之间相似度的一种算法。它是Jaro distance算法的变种。主要用于record linkage/数据连接（duplicate detection/重复记录）方面的领域，Jaro–Winkler distance最后得分越高说明相似度越大。Jaro–Winkler distance 是适合于串比如名字这样较短的字符之间计算相似度。0分表示没有任何相似度，1分则代表完全匹配。</p>
-<h3 id="算法定义"><a href="#算法定义" class="headerlink" title="算法定义"></a>算法定义</h3><ol>
-<li>The Jaro distance算法最后得分公式：<script type="math/tex; mode=display">d_j = \frac{1}{3}\left(\frac{m}{|s1|} + \frac{m}{|s2|} + \frac{m-t}{m} \right)</script>其中:   </li>
-</ol>
-<ul>
-<li>s1、s2 是要比对的两个字符</li>
-<li>$d_j$是最后得分</li>
-<li>m是匹配的字符数</li>
-<li>t  是换位的数目</li>
-</ul>
-<ol>
-<li>Match Window(匹配窗口)计算公式<script type="math/tex; mode=display">MW=\left(\frac{MAX(|s1|,|s2|)}{2}\right) - 1</script>其中：</li>
-</ol>
-<ul>
-<li>s1、s2 是要比对的两个字符</li>
-<li>MW是匹配窗口值</li>
-</ul>
-<ol>
-<li>上述公式解释</li>
-</ol>
-<ul>
-<li>字符串s1与字符串s2在做匹配计算时，当两个字符的距离不大于公式二的最后结果(匹配窗口)即认为是匹配的。</li>
-<li>当s1、s2中字符相匹配但是字符位置不一样时发生换位操作、而公式一中换位的数目t为不同顺序的匹配字符的数目的一半。比如:两个字符串CRATE和TRACE做匹配操作，字符串中仅有’R’ ‘A’ ‘E’三个字符是匹配的，即m=3。为什么’C’, ‘T’不算做是匹配的呢。因为虽然’C’, ‘T’都出现在两个字符串中，但是通过公式二得出匹配窗口值为 (5/2)-1=1.5。而两个字符串中’C’, ‘T’字符的距离均大于1.5。所以不算做匹配。因此t=0。在另一组字符串DwAyNE 与 DuANE 。匹配的字符D-A-N-E 在两个字符串中有相同的字符顺序，所以不需要进行换位操作，因此t=0,m=4。</li>
-</ul>
-<ol>
-<li>Jaro–Winkler distance算法公式<br>Jaro-Winkler算法给予了起始部分就相同的字符串更高的分数，它定义了一个前缀范围p，对于要匹配的两个字符串，如果前缀部分有长度为L的部分字符串相同，则Jaro-Winkler Distance为:<script type="math/tex; mode=display">d_w = d_j + L * P(1 - d_J)</script>其中:   </li>
-</ol>
-<ul>
-<li>$d_j$是Jaro distance最后得分</li>
-<li>L是前缀部分匹配的长度</li>
-<li>P是一个范围因子常量，用来调整前缀匹配的权值，但是P的值不能超过0.25，因为这样最后得分可能超过1分.Winkler的标准默认设置值P=0.1。</li>
-</ul>
-<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>给出两个字符串 s1 MARTHA 和 s2 MARHTA、我们可以得出：</p>
-<ul>
-<li>m = 6</li>
-<li>|s1| = 6</li>
-<li>|s2| = 6</li>
-<li>两组字符T/H和H/T要进行换位操作，因此t=2/2=1;<br>我们可以根据公式一得出Jaro得分：<script type="math/tex; mode=display">d_j = \frac{1}{3}\left(\frac{6}{|6|} + \frac{6}{|6|} + \frac{6-1}{6}\right)</script>如果使用Jaro–Winkler，并且取范围因子P=0.1,我们会得出:<br>P=0.1<br>L=3<br>$d_w = 0.944 + (3 * 0.1(1 - 0.944))=0.961$</li>
-</ul>
-<h3 id="python-运行"><a href="#python-运行" class="headerlink" title="python 运行"></a>python 运行</h3><ol>
-<li><p>安装lib</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install jaro_winkler</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>程序运行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(jaro.jaro_metric(&quot;MARTHA&quot;.decode(&quot;utf-8&quot;),&quot;MARHTA&quot;.decode(&quot;utf-8&quot;)))</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><ol>
-<li>多进程</li>
-<li>pandas</li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2102,7 +2074,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-count">29</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
